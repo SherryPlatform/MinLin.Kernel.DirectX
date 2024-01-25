@@ -26,17 +26,17 @@ memory reservation of an allocation.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgkrnl.h  |  21 +++
- drivers/hv/dxgkrnl/dxgvmbus.c | 300 ++++++++++++++++++++++++++++++++++
- drivers/hv/dxgkrnl/dxgvmbus.h |  50 ++++++
- drivers/hv/dxgkrnl/ioctl.c    | 217 +++++++++++++++++++++++-
- include/uapi/misc/d3dkmthk.h  | 127 ++++++++++++++
+ dxgkrnl.h  |  21 +++
+ dxgvmbus.c | 300 ++++++++++++++++++++++++++++++++++
+ dxgvmbus.h |  50 ++++++
+ ioctl.c    | 217 +++++++++++++++++++++++-
+ d3dkmthk.h  | 127 ++++++++++++++
  5 files changed, 708 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index 1d6b552f1c1a..7fefe4617488 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -851,6 +851,23 @@ int dxgvmb_send_lock2(struct dxgprocess *process,
  int dxgvmb_send_unlock2(struct dxgprocess *process,
  			struct dxgadapter *adapter,
@@ -72,10 +72,10 @@ index 1d6b552f1c1a..7fefe4617488 100644
  int dxgvmb_send_get_device_state(struct dxgprocess *process,
  				 struct dxgadapter *adapter,
  				 struct d3dkmt_getdevicestate *args,
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index a80f84d9065a..dd2c97fee27b 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -1829,6 +1829,79 @@ int dxgvmb_send_destroy_allocation(struct dxgprocess *process,
  	return ret;
  }
@@ -390,10 +390,10 @@ index a80f84d9065a..dd2c97fee27b 100644
  int dxgvmb_send_create_hwqueue(struct dxgprocess *process,
  			       struct dxgadapter *adapter,
  			       struct d3dkmt_createhwqueue *args,
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index 447bb1ba391b..dbb01b9ab066 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -308,6 +308,29 @@ struct dxgkvmb_command_queryadapterinfo_return {
  	u8				private_data[1];
  };
@@ -465,10 +465,10 @@ index 447bb1ba391b..dbb01b9ab066 100644
  struct dxgkvmb_command_getdevicestate {
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	struct d3dkmt_getdevicestate	args;
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 37e218443310..b626e2518ff2 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -3214,7 +3214,7 @@ dxgkio_lock2(struct dxgprocess *process, void *__user inargs)
  		kref_put(&device->device_kref, dxgdevice_release);
  
@@ -729,10 +729,10 @@ index 37e218443310..b626e2518ff2 100644
  /* 0x3d */	{},
  /* 0x3e */	{dxgkio_enum_adapters3, LX_DXENUMADAPTERS3},
  /* 0x3f */	{dxgkio_share_objects, LX_DXSHAREOBJECTS},
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index b498f09e694d..af381101fd90 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -668,6 +668,63 @@ struct d3dkmt_submitcommandtohwqueue {
  #endif
  };

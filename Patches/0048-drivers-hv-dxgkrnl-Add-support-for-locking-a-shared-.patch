@@ -11,15 +11,15 @@ adds support for this feature.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgadapter.c |  4 ++--
- drivers/hv/dxgkrnl/dxgkrnl.h    | 13 ++++++++++++-
- drivers/hv/dxgkrnl/ioctl.c      | 25 +++++++++++++++++--------
+ dxgadapter.c |  4 ++--
+ dxgkrnl.h    | 13 ++++++++++++-
+ ioctl.c      | 25 +++++++++++++++++--------
  3 files changed, 31 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+diff --git a/dxgadapter.c b/dxgadapter.c
 index d4db4a129ea6..54bf0c3868b1 100644
---- a/drivers/hv/dxgkrnl/dxgadapter.c
-+++ b/drivers/hv/dxgkrnl/dxgadapter.c
+--- a/dxgadapter.c
++++ b/dxgadapter.c
 @@ -559,8 +559,8 @@ void dxgsharedresource_destroy(struct kref *refcount)
  		vfree(resource->runtime_private_data);
  	if (resource->resource_private_data)
@@ -31,10 +31,10 @@ index d4db4a129ea6..54bf0c3868b1 100644
  	if (resource->alloc_private_data)
  		vfree(resource->alloc_private_data);
  	kfree(resource);
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index 2a28c9ea3488..71eac6b1fa56 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -613,6 +613,17 @@ struct dxghwqueue *dxghwqueue_create(struct dxgcontext *ctx);
  void dxghwqueue_destroy(struct dxgprocess *pr, struct dxghwqueue *hq);
  void dxghwqueue_release(struct kref *refcount);
@@ -62,10 +62,10 @@ index 2a28c9ea3488..71eac6b1fa56 100644
  	u8			*alloc_private_data;
  	u8			*runtime_private_data;
  	u8			*resource_private_data;
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index d91af2e176e9..f8f116a7f87f 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -369,6 +369,7 @@ static int dxgsharedresource_seal(struct dxgsharedresource *shared_resource)
  	u32 data_size;
  	struct dxgresource *resource;

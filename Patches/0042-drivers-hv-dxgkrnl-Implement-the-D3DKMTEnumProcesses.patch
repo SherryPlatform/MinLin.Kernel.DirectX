@@ -9,16 +9,16 @@ which opened the /dev/dxg device.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgkrnl.h    |  1 +
- drivers/hv/dxgkrnl/dxgprocess.c |  2 +
- drivers/hv/dxgkrnl/ioctl.c      | 81 +++++++++++++++++++++++++++++++++
- include/uapi/misc/d3dkmthk.h    | 12 +++++
+ dxgkrnl.h    |  1 +
+ dxgprocess.c |  2 +
+ ioctl.c      | 81 +++++++++++++++++++++++++++++++++
+ d3dkmthk.h    | 12 +++++
  4 files changed, 96 insertions(+)
 
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index dbbb566e2cf0..dcc56bc84e0d 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -387,6 +387,7 @@ struct dxgprocess {
  	pid_t			pid;
  	pid_t			tgid;
@@ -27,10 +27,10 @@ index dbbb566e2cf0..dcc56bc84e0d 100644
  	/* how many time the process was opened */
  	struct kref		process_kref;
  	/* protects the object memory */
-diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
+diff --git a/dxgprocess.c b/dxgprocess.c
 index 5a4c4cb0c2e8..9bfd53df1a54 100644
---- a/drivers/hv/dxgkrnl/dxgprocess.c
-+++ b/drivers/hv/dxgkrnl/dxgprocess.c
+--- a/dxgprocess.c
++++ b/dxgprocess.c
 @@ -13,6 +13,7 @@
  
  #include "dxgkrnl.h"
@@ -47,10 +47,10 @@ index 5a4c4cb0c2e8..9bfd53df1a54 100644
  		ret = dxgvmb_send_create_process(process);
  		if (ret < 0) {
  			DXG_TRACE("send_create_process failed");
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 466bef6c14b3..24b84be2fb73 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -16,6 +16,7 @@
  #include <linux/fs.h>
  #include <linux/anon_inodes.h>
@@ -153,10 +153,10 @@ index 466bef6c14b3..24b84be2fb73 100644
  };
  
  /*
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index 84fa07a46d3c..f9f817060fa9 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -1580,6 +1580,16 @@ struct d3dkmt_opensyncobjectfromsyncfile {
  	__u64			fence_value_gpu_va;	/* out */
  };

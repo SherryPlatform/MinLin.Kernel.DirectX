@@ -5,19 +5,19 @@ Subject: [PATCH 36/48] drivers: hv: dxgkrnl: Fix synchronization locks
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgadapter.c | 19 ++++----
- drivers/hv/dxgkrnl/dxgkrnl.h    |  8 +++-
- drivers/hv/dxgkrnl/dxgmodule.c  |  3 +-
- drivers/hv/dxgkrnl/dxgprocess.c | 11 +++--
- drivers/hv/dxgkrnl/dxgvmbus.c   | 85 +++++++++++++++++++++++----------
- drivers/hv/dxgkrnl/ioctl.c      | 24 ++++++----
- drivers/hv/dxgkrnl/misc.h       |  1 +
+ dxgadapter.c | 19 ++++----
+ dxgkrnl.h    |  8 +++-
+ dxgmodule.c  |  3 +-
+ dxgprocess.c | 11 +++--
+ dxgvmbus.c   | 85 +++++++++++++++++++++++----------
+ ioctl.c      | 24 ++++++----
+ misc.h       |  1 +
  7 files changed, 101 insertions(+), 50 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+diff --git a/dxgadapter.c b/dxgadapter.c
 index 3d8bec295b87..d9d45bd4a31e 100644
---- a/drivers/hv/dxgkrnl/dxgadapter.c
-+++ b/drivers/hv/dxgkrnl/dxgadapter.c
+--- a/dxgadapter.c
++++ b/dxgadapter.c
 @@ -136,7 +136,7 @@ void dxgadapter_release(struct kref *refcount)
  	struct dxgadapter *adapter;
  
@@ -87,10 +87,10 @@ index 3d8bec295b87..d9d45bd4a31e 100644
  	}
  	kfree(syncobj);
  }
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index f63aa6f7a9dc..1b40d6e39085 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -404,7 +404,10 @@ struct dxgprocess {
  	/* Handle of the corresponding objec on the host */
  	struct d3dkmthandle	host_handle;
@@ -120,10 +120,10 @@ index f63aa6f7a9dc..1b40d6e39085 100644
  }  while (0)
  
  #define DXG_ERR(fmt, ...) do {					\
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 index aa27931a3447..f419597f711a 100644
---- a/drivers/hv/dxgkrnl/dxgmodule.c
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
+--- a/dxgmodule.c
++++ b/dxgmodule.c
 @@ -272,6 +272,7 @@ int dxgglobal_create_adapter(struct pci_dev *dev, guid_t *guid,
  	adapter->host_vgpu_luid = host_vgpu_luid;
  	kref_init(&adapter->adapter_kref);
@@ -138,10 +138,10 @@ index aa27931a3447..f419597f711a 100644
  MODULE_DESCRIPTION("Microsoft Dxgkrnl virtual compute device Driver");
 -MODULE_VERSION("2.0.0");
 +MODULE_VERSION("2.0.1");
-diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
+diff --git a/dxgprocess.c b/dxgprocess.c
 index e77e3a4983f8..fd51fd968049 100644
---- a/drivers/hv/dxgkrnl/dxgprocess.c
-+++ b/drivers/hv/dxgkrnl/dxgprocess.c
+--- a/dxgprocess.c
++++ b/dxgprocess.c
 @@ -214,14 +214,15 @@ int dxgprocess_close_adapter(struct dxgprocess *process,
  	hmgrtable_unlock(&process->local_handle_table, DXGLOCK_EXCL);
  
@@ -163,10 +163,10 @@ index e77e3a4983f8..fd51fd968049 100644
  	} else {
  		DXG_ERR("Adapter not found %x", handle.v);
  		ret = -EINVAL;
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 566ccb6d01c9..8c99f141482e 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -1573,8 +1573,27 @@ process_allocation_handles(struct dxgprocess *process,
  			   struct dxgresource *resource)
  {
@@ -309,10 +309,10 @@ index 566ccb6d01c9..8c99f141482e 100644
  cleanup:
  	if (ret < 0) {
  		DXG_ERR("failed %x", ret);
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 3dc9e76f4f3d..7c72790f917f 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -636,6 +636,7 @@ dxgkio_create_device(struct dxgprocess *process, void *__user inargs)
  	struct dxgdevice *device = NULL;
  	struct d3dkmthandle host_device_handle = {};
@@ -372,10 +372,10 @@ index 3dc9e76f4f3d..7c72790f917f 100644
  	} else {
  		DXG_ERR("invalid host handle");
  		ret = -EINVAL;
-diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
+diff --git a/misc.h b/misc.h
 index ee2ebfdd1c13..9fcab4ae2c0c 100644
---- a/drivers/hv/dxgkrnl/misc.h
-+++ b/drivers/hv/dxgkrnl/misc.h
+--- a/misc.h
++++ b/misc.h
 @@ -38,6 +38,7 @@ extern const struct d3dkmthandle zerohandle;
   * core_lock (dxgadapter lock)
   * device_lock (dxgdevice lock)

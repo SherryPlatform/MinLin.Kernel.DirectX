@@ -12,17 +12,17 @@ compute device API.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgkrnl.h  |  3 ++
- drivers/hv/dxgkrnl/dxgvmbus.c | 75 ++++++++++++++++++++++++++++++++---
- drivers/hv/dxgkrnl/dxgvmbus.h | 12 ++++++
- drivers/hv/dxgkrnl/ioctl.c    | 42 +++++++++++++++++++-
- include/uapi/misc/d3dkmthk.h  | 41 +++++++++++++++++++
+ dxgkrnl.h  |  3 ++
+ dxgvmbus.c | 75 ++++++++++++++++++++++++++++++++---
+ dxgvmbus.h | 12 ++++++
+ ioctl.c    | 42 +++++++++++++++++++-
+ d3dkmthk.h  | 41 +++++++++++++++++++
  5 files changed, 167 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index b6a7288a4177..dafc721ed6cf 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -894,6 +894,9 @@ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
  				      struct dxgadapter *adapter,
  				      struct d3dkmt_queryallocationresidency
@@ -33,10 +33,10 @@ index b6a7288a4177..dafc721ed6cf 100644
  int dxgvmb_send_query_vidmem_info(struct dxgprocess *process,
  				  struct dxgadapter *adapter,
  				  struct d3dkmt_queryvideomemoryinfo *args,
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 48ff49456057..8bdd49bc7aa6 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -1925,6 +1925,70 @@ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
  	return ret;
  }
@@ -156,10 +156,10 @@ index 48ff49456057..8bdd49bc7aa6 100644
  	return ret;
  }
 +
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index a1549983d50f..e1c2ed7b1580 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -664,6 +664,18 @@ struct dxgkvmb_command_queryallocationresidency_return {
  	/* d3dkmt_allocationresidencystatus[NumAllocations] */
  };
@@ -179,10 +179,10 @@ index a1549983d50f..e1c2ed7b1580 100644
  struct dxgkvmb_command_queryvideomemoryinfo {
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	struct d3dkmthandle		adapter;
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index e692b127e219..78de76abce2d 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -3547,6 +3547,46 @@ dxgkio_flush_heap_transitions(struct dxgprocess *process, void *__user inargs)
  	return ret;
  }
@@ -239,10 +239,10 @@ index e692b127e219..78de76abce2d 100644
  /* 0x0e */	{dxgkio_get_device_state, LX_DXGETDEVICESTATE},
  /* 0x0f */	{dxgkio_submit_command, LX_DXSUBMITCOMMAND},
  /* 0x10 */	{dxgkio_create_sync_object, LX_DXCREATESYNCHRONIZATIONOBJECT},
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index b7d8b1d91cfc..749edf28bd43 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -236,6 +236,45 @@ struct d3dddi_destroypagingqueue {
  	struct d3dkmthandle		paging_queue;
  };

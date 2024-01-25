@@ -5,20 +5,20 @@ Subject: [PATCH 34/48] drivers: hv: dxgkrnl: Implement D3DKMTWaitSyncFile
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgkrnl.h     |  11 ++
- drivers/hv/dxgkrnl/dxgmodule.c   |   7 +-
- drivers/hv/dxgkrnl/dxgprocess.c  |  12 +-
- drivers/hv/dxgkrnl/dxgsyncfile.c | 291 ++++++++++++++++++++++++++++++-
- drivers/hv/dxgkrnl/dxgsyncfile.h |   3 +
- drivers/hv/dxgkrnl/dxgvmbus.c    |  49 ++++++
- drivers/hv/dxgkrnl/ioctl.c       |  16 +-
- include/uapi/misc/d3dkmthk.h     |  23 +++
+ dxgkrnl.h     |  11 ++
+ dxgmodule.c   |   7 +-
+ dxgprocess.c  |  12 +-
+ dxgsyncfile.c | 291 ++++++++++++++++++++++++++++++-
+ dxgsyncfile.h |   3 +
+ dxgvmbus.c    |  49 ++++++
+ ioctl.c       |  16 +-
+ d3dkmthk.h     |  23 +++
  8 files changed, 396 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index 3a69e3b34e1c..d92e1348ccfb 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -254,6 +254,10 @@ void dxgsharedsyncobj_add_syncobj(struct dxgsharedsyncobject *sharedsyncobj,
  				  struct dxgsyncobject *syncobj);
  void dxgsharedsyncobj_remove_syncobj(struct dxgsharedsyncobject *sharedsyncobj,
@@ -58,10 +58,10 @@ index 3a69e3b34e1c..d92e1348ccfb 100644
  int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
  				      struct dxgadapter *adapter,
  				      struct d3dkmt_queryallocationresidency
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 index 08feae97e845..5570f35954d4 100644
---- a/drivers/hv/dxgkrnl/dxgmodule.c
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
+--- a/dxgmodule.c
++++ b/dxgmodule.c
 @@ -149,10 +149,11 @@ void dxgglobal_remove_host_event(struct dxghostevent *event)
  	spin_unlock_irq(&dxgglobal->host_event_list_mutex);
  }
@@ -100,10 +100,10 @@ index 08feae97e845..5570f35954d4 100644
  
  	f->private_data = NULL;
  	return 0;
-diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
+diff --git a/dxgprocess.c b/dxgprocess.c
 index afef196c0588..e77e3a4983f8 100644
---- a/drivers/hv/dxgkrnl/dxgprocess.c
-+++ b/drivers/hv/dxgkrnl/dxgprocess.c
+--- a/dxgprocess.c
++++ b/dxgprocess.c
 @@ -39,6 +39,7 @@ struct dxgprocess *dxgprocess_create(void)
  		} else {
  			INIT_LIST_HEAD(&process->plistentry);
@@ -131,10 +131,10 @@ index afef196c0588..e77e3a4983f8 100644
  	kfree(process);
  }
  
-diff --git a/drivers/hv/dxgkrnl/dxgsyncfile.c b/drivers/hv/dxgkrnl/dxgsyncfile.c
+diff --git a/dxgsyncfile.c b/dxgsyncfile.c
 index 88fd78f08fbe..9d5832c90ad7 100644
---- a/drivers/hv/dxgkrnl/dxgsyncfile.c
-+++ b/drivers/hv/dxgkrnl/dxgsyncfile.c
+--- a/dxgsyncfile.c
++++ b/dxgsyncfile.c
 @@ -9,6 +9,20 @@
   * Dxgkrnl Graphics Driver
   * Ioctl implementation
@@ -484,10 +484,10 @@ index 88fd78f08fbe..9d5832c90ad7 100644
  }
  
  static bool dxgdmafence_signaled(struct dma_fence *fence)
-diff --git a/drivers/hv/dxgkrnl/dxgsyncfile.h b/drivers/hv/dxgkrnl/dxgsyncfile.h
+diff --git a/dxgsyncfile.h b/dxgsyncfile.h
 index 207ef9b30f67..292b7f718987 100644
---- a/drivers/hv/dxgkrnl/dxgsyncfile.h
-+++ b/drivers/hv/dxgkrnl/dxgsyncfile.h
+--- a/dxgsyncfile.h
++++ b/dxgsyncfile.h
 @@ -17,10 +17,13 @@
  #include <linux/sync_file.h>
  
@@ -502,10 +502,10 @@ index 207ef9b30f67..292b7f718987 100644
  	u64			fence_value;
  	u64			context;
  	spinlock_t		lock;
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index d53d4254be63..36f4d4e84d3e 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -796,6 +796,55 @@ int dxgvmb_send_open_sync_object_nt(struct dxgprocess *process,
  	return ret;
  }
@@ -562,10 +562,10 @@ index d53d4254be63..36f4d4e84d3e 100644
  int dxgvmb_send_create_nt_shared_object(struct dxgprocess *process,
  					struct d3dkmthandle object,
  					struct d3dkmthandle *shared_handle)
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 4db23cd55b24..622904d5c3a9 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -36,10 +36,8 @@ static char *errorstr(int ret)
  }
  #endif
@@ -611,10 +611,10 @@ index 4db23cd55b24..622904d5c3a9 100644
  };
  
  /*
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index c7f168425dc7..1eaa3f038322 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -1561,6 +1561,25 @@ struct d3dkmt_createsyncfile {
  	__u64			sync_file_handle;	/* out */
  };

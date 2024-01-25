@@ -29,33 +29,33 @@ channel are destroyed, the adapter object is destroyed.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/Makefile     |   2 +-
- drivers/hv/dxgkrnl/dxgadapter.c | 170 +++++++++++++++++++++++++
- drivers/hv/dxgkrnl/dxgkrnl.h    |  85 +++++++++++++
- drivers/hv/dxgkrnl/dxgmodule.c  | 204 +++++++++++++++++++++++++++++-
- drivers/hv/dxgkrnl/dxgvmbus.c   | 217 +++++++++++++++++++++++++++++---
- drivers/hv/dxgkrnl/dxgvmbus.h   | 128 +++++++++++++++++++
- drivers/hv/dxgkrnl/misc.c       |  37 ++++++
- drivers/hv/dxgkrnl/misc.h       |  24 +++-
+ Makefile     |   2 +-
+ dxgadapter.c | 170 +++++++++++++++++++++++++
+ dxgkrnl.h    |  85 +++++++++++++
+ dxgmodule.c  | 204 +++++++++++++++++++++++++++++-
+ dxgvmbus.c   | 217 +++++++++++++++++++++++++++++---
+ dxgvmbus.h   | 128 +++++++++++++++++++
+ misc.c       |  37 ++++++
+ misc.h       |  24 +++-
  8 files changed, 844 insertions(+), 23 deletions(-)
- create mode 100644 drivers/hv/dxgkrnl/dxgadapter.c
- create mode 100644 drivers/hv/dxgkrnl/misc.c
+ create mode 100644 dxgadapter.c
+ create mode 100644 misc.c
 
-diff --git a/drivers/hv/dxgkrnl/Makefile b/drivers/hv/dxgkrnl/Makefile
+diff --git a/Makefile b/Makefile
 index 76349064b60a..2ed07d877c91 100644
---- a/drivers/hv/dxgkrnl/Makefile
-+++ b/drivers/hv/dxgkrnl/Makefile
+--- a/Makefile
++++ b/Makefile
 @@ -2,4 +2,4 @@
  # Makefile for the hyper-v compute device driver (dxgkrnl).
  
  obj-$(CONFIG_DXGKRNL)	+= dxgkrnl.o
 -dxgkrnl-y		:= dxgmodule.o dxgvmbus.o
 +dxgkrnl-y		:= dxgmodule.o misc.o dxgadapter.o ioctl.o dxgvmbus.o
-diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+diff --git a/dxgadapter.c b/dxgadapter.c
 new file mode 100644
 index 000000000000..07d47699d255
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/dxgadapter.c
++++ b/dxgadapter.c
 @@ -0,0 +1,170 @@
 +// SPDX-License-Identifier: GPL-2.0
 +
@@ -227,10 +227,10 @@ index 000000000000..07d47699d255
 +{
 +	up_read(&adapter->core_lock);
 +}
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index 52b9e82c51e6..ba2a7c6001aa 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -47,9 +47,39 @@ extern struct dxgdriver dxgdrv;
  
  #define DXGDEV dxgdrv.dxgdev
@@ -354,10 +354,10 @@ index 52b9e82c51e6..ba2a7c6001aa 100644
  
  int ntstatus2int(struct ntstatus status);
  
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 index e55639dc0adc..ef80b920f010 100644
---- a/drivers/hv/dxgkrnl/dxgmodule.c
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
+--- a/dxgmodule.c
++++ b/dxgmodule.c
 @@ -55,6 +55,156 @@ void dxgglobal_release_channel_lock(void)
  	up_read(&dxggbl()->channel_lock);
  }
@@ -625,10 +625,10 @@ index e55639dc0adc..ef80b920f010 100644
  		dxgglobal_destroy_global_channel();
  		mutex_unlock(&dxgglobal->device_mutex);
  
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index a4365739826a..6d4b8d9d8d07 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -77,7 +77,7 @@ struct dxgvmbusmsgres {
  	void				*res;
  };
@@ -918,10 +918,10 @@ index a4365739826a..6d4b8d9d8d07 100644
 +		DXG_ERR("Failed to get adapter info: %d", ret);
 +	return ret;
 +}
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index b1bdd6039b73..584cdd3db6c0 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -47,6 +47,83 @@ enum dxgkvmb_commandtype_global {
  	DXGK_VMBCOMMAND_INVALID_VM_TO_HOST
  };
@@ -1069,11 +1069,11 @@ index b1bdd6039b73..584cdd3db6c0 100644
 +};
 +
  #endif /* _DXGVMBUS_H */
-diff --git a/drivers/hv/dxgkrnl/misc.c b/drivers/hv/dxgkrnl/misc.c
+diff --git a/misc.c b/misc.c
 new file mode 100644
 index 000000000000..cb1e0635bebc
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/misc.c
++++ b/misc.c
 @@ -0,0 +1,37 @@
 +// SPDX-License-Identifier: GPL-2.0
 +
@@ -1112,10 +1112,10 @@ index 000000000000..cb1e0635bebc
 +	dest[i - 1] = 0;
 +	return dest;
 +}
-diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
+diff --git a/misc.h b/misc.h
 index 4c6047c32a20..d292e9a9bb7f 100644
---- a/drivers/hv/dxgkrnl/misc.h
-+++ b/drivers/hv/dxgkrnl/misc.h
+--- a/misc.h
++++ b/misc.h
 @@ -14,18 +14,34 @@
  #ifndef _MISC_H_
  #define _MISC_H_

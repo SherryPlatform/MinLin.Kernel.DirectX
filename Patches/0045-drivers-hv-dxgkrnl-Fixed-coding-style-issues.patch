@@ -5,16 +5,16 @@ Subject: [PATCH 45/48] drivers: hv: dxgkrnl: Fixed coding style issues
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgadapter.c | 12 ++++--------
- drivers/hv/dxgkrnl/dxgkrnl.h    |  6 +++---
- drivers/hv/dxgkrnl/dxgvmbus.c   |  2 +-
- drivers/hv/dxgkrnl/ioctl.c      | 20 +++++++-------------
+ dxgadapter.c | 12 ++++--------
+ dxgkrnl.h    |  6 +++---
+ dxgvmbus.c   |  2 +-
+ ioctl.c      | 20 +++++++-------------
  4 files changed, 15 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+diff --git a/dxgadapter.c b/dxgadapter.c
 index d9d45bd4a31e..d4db4a129ea6 100644
---- a/drivers/hv/dxgkrnl/dxgadapter.c
-+++ b/drivers/hv/dxgkrnl/dxgadapter.c
+--- a/dxgadapter.c
++++ b/dxgadapter.c
 @@ -1025,8 +1025,7 @@ struct dxgprocess_adapter *dxgprocess_adapter_create(struct dxgprocess *process,
  	}
  	return adapter_info;
@@ -48,10 +48,10 @@ index d9d45bd4a31e..d4db4a129ea6 100644
  	kfree(syncobj);
  }
  
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index 08479015b827..2a28c9ea3488 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -47,10 +47,10 @@ struct dxghwqueue;
   * Driver private data.
   * A single /dev/dxg device is created per virtual machine.
@@ -66,10 +66,10 @@ index 08479015b827..2a28c9ea3488 100644
  	struct hv_driver	vmbus_drv;
  };
  extern struct dxgdriver dxgdrv;
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 64fc1adf671f..b67a2e4af8d1 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -246,7 +246,7 @@ int dxgvmbuschannel_init(struct dxgvmbuschannel *ch, struct hv_device *hdev)
  		goto cleanup;
  	}
@@ -79,10 +79,10 @@ index 64fc1adf671f..b67a2e4af8d1 100644
  	hdev->channel->max_pkt_size = DXG_MAX_VM_BUS_PACKET_SIZE;
  #endif
  	ret = vmbus_open(hdev->channel, RING_BUFSIZE, RING_BUFSIZE,
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index f8ca79d098f3..5ac6dd1f09b9 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -3162,8 +3162,7 @@ dxgkio_signal_sync_object(struct dxgprocess *process, void *__user inargs)
  		}
  		if (event)

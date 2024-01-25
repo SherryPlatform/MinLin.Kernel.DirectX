@@ -11,17 +11,17 @@ needs to be accessed by the device. And vice versa.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgkrnl.h  |  3 +++
- drivers/hv/dxgkrnl/dxgvmbus.c | 27 +++++++++++++++++++
- drivers/hv/dxgkrnl/dxgvmbus.h | 11 ++++++++
- drivers/hv/dxgkrnl/ioctl.c    | 49 +++++++++++++++++++++++++++++++++--
- include/uapi/misc/d3dkmthk.h  |  9 +++++++
+ dxgkrnl.h  |  3 +++
+ dxgvmbus.c | 27 +++++++++++++++++++
+ dxgvmbus.h | 11 ++++++++
+ ioctl.c    | 49 +++++++++++++++++++++++++++++++++--
+ d3dkmthk.h  |  9 +++++++
  5 files changed, 97 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index 995cd9a58713..f86e69e37147 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -993,6 +993,9 @@ int dxgvmb_send_async_msg(struct dxgvmbuschannel *channel,
  			  u32 cmd_size);
  int dxgvmb_send_share_object_with_host(struct dxgprocess *process,
@@ -32,10 +32,10 @@ index 995cd9a58713..f86e69e37147 100644
  
  void signal_host_cpu_event(struct dxghostevent *eventhdr);
  int ntstatus2int(struct ntstatus status);
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 4e9167904425..bc8a52606d93 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -2029,6 +2029,33 @@ int dxgvmb_send_flush_heap_transitions(struct dxgprocess *process,
  	return ret;
  }
@@ -70,10 +70,10 @@ index 4e9167904425..bc8a52606d93 100644
  int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
  				      struct dxgadapter *adapter,
  				      struct d3dkmt_queryallocationresidency
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index b4a98f7c2522..20c562b485de 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -125,6 +125,7 @@ enum dxgkvmb_commandtype {
  	DXGK_VMBCOMMAND_QUERYRESOURCEINFO	= 64,
  	DXGK_VMBCOMMAND_LOGEVENT		= 65,
@@ -99,10 +99,10 @@ index b4a98f7c2522..20c562b485de 100644
  struct dxgkvmb_command_freegpuvirtualaddress {
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	struct d3dkmt_freegpuvirtualaddress args;
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index f735b18fcc14..56b838a87f09 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -4286,6 +4286,8 @@ dxgkio_query_clock_calibration(struct dxgprocess *process, void *__user inargs)
  		dxgadapter_release_lock_shared(adapter);
  	if (adapter)
@@ -180,10 +180,10 @@ index f735b18fcc14..56b838a87f09 100644
  		 LX_DXOPENSYNCOBJECTFROMSYNCFILE},
  };
  
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index 1eaa3f038322..84fa07a46d3c 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -1580,6 +1580,13 @@ struct d3dkmt_opensyncobjectfromsyncfile {
  	__u64			fence_value_gpu_va;	/* out */
  };

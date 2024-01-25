@@ -16,17 +16,17 @@ and is used for performance monitoring.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgkrnl.h  |   8 +++
- drivers/hv/dxgkrnl/dxgvmbus.c |  77 +++++++++++++++++++++++
- drivers/hv/dxgkrnl/dxgvmbus.h |  21 +++++++
- drivers/hv/dxgkrnl/ioctl.c    | 111 +++++++++++++++++++++++++++++++++-
- include/uapi/misc/d3dkmthk.h  |  62 +++++++++++++++++++
+ dxgkrnl.h  |   8 +++
+ dxgvmbus.c |  77 +++++++++++++++++++++++
+ dxgvmbus.h |  21 +++++++
+ ioctl.c    | 111 +++++++++++++++++++++++++++++++++-
+ d3dkmthk.h  |  62 +++++++++++++++++++
  5 files changed, 277 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index b454c7430f06..a55873bdd9a6 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -885,6 +885,11 @@ int dxgvmb_send_query_adapter_info(struct dxgprocess *process,
  int dxgvmb_send_submit_command_hwqueue(struct dxgprocess *process,
  				       struct dxgadapter *adapter,
@@ -49,10 +49,10 @@ index b454c7430f06..a55873bdd9a6 100644
  int dxgvmb_send_async_msg(struct dxgvmbuschannel *channel,
  			  void *command,
  			  u32 cmd_size);
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index f7264b12a477..9a1864bb4e14 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -1829,6 +1829,48 @@ int dxgvmb_send_destroy_allocation(struct dxgprocess *process,
  	return ret;
  }
@@ -141,10 +141,10 @@ index f7264b12a477..9a1864bb4e14 100644
 +		DXG_TRACE("err: %d", ret);
 +	return ret;
 +}
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index a66e11097bb2..17768ed0e68d 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -372,6 +372,16 @@ struct dxgkvmb_command_flushheaptransitions {
  	struct dxgkvmb_command_vgpu_to_host hdr;
  };
@@ -180,10 +180,10 @@ index a66e11097bb2..17768ed0e68d 100644
  struct dxgkvmb_command_getstandardallocprivdata {
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	enum d3dkmdt_standardallocationtype alloc_type;
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index ce4af610ada7..4babb21f38a9 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -149,6 +149,65 @@ static int dxgkio_open_adapter_from_luid(struct dxgprocess *process,
  	return ret;
  }
@@ -322,10 +322,10 @@ index ce4af610ada7..4babb21f38a9 100644
  /* 0x44 */	{dxgkio_share_object_with_host, LX_DXSHAREOBJECTWITHHOST},
  /* 0x45 */	{},
  };
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index ce5a638a886d..ea18242ceb83 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -996,6 +996,34 @@ struct d3dkmt_queryadapterinfo {
  	__u32				private_data_size;
  };

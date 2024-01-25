@@ -20,17 +20,17 @@ the device.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgkrnl.h  |   8 +++
- drivers/hv/dxgkrnl/dxgvmbus.c | 124 +++++++++++++++++++++++++++++++++-
- drivers/hv/dxgkrnl/dxgvmbus.h |  27 ++++++++
- drivers/hv/dxgkrnl/ioctl.c    | 117 +++++++++++++++++++++++++++++++-
- include/uapi/misc/d3dkmthk.h  |  67 ++++++++++++++++++
+ dxgkrnl.h  |   8 +++
+ dxgvmbus.c | 124 +++++++++++++++++++++++++++++++++-
+ dxgvmbus.h |  27 ++++++++
+ ioctl.c    | 117 +++++++++++++++++++++++++++++++-
+ d3dkmthk.h  |  67 ++++++++++++++++++
  5 files changed, 340 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index a55873bdd9a6..494ea8fb0bb3 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -865,6 +865,14 @@ int dxgvmb_send_set_allocation_priority(struct dxgprocess *process,
  int dxgvmb_send_get_allocation_priority(struct dxgprocess *process,
  					struct dxgadapter *adapter,
@@ -46,10 +46,10 @@ index a55873bdd9a6..494ea8fb0bb3 100644
  int dxgvmb_send_change_vidmem_reservation(struct dxgprocess *process,
  					  struct dxgadapter *adapter,
  					  struct d3dkmthandle other_process,
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 9a1864bb4e14..8448fd78975b 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -1858,7 +1858,7 @@ int dxgvmb_send_query_clock_calibration(struct dxgprocess *process,
  	ret = copy_to_user(&inargs->clock_data, &result.clock_data,
  			   sizeof(result.clock_data));
@@ -188,10 +188,10 @@ index 9a1864bb4e14..8448fd78975b 100644
  int dxgvmb_send_change_vidmem_reservation(struct dxgprocess *process,
  					  struct dxgadapter *adapter,
  					  struct d3dkmthandle other_process,
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index 17768ed0e68d..558c6576a262 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -653,6 +653,33 @@ struct dxgkvmb_command_markdeviceaserror {
  	struct d3dkmt_markdeviceaserror args;
  };
@@ -226,10 +226,10 @@ index 17768ed0e68d..558c6576a262 100644
  /* Returns ntstatus */
  struct dxgkvmb_command_changevideomemoryreservation {
  	struct dxgkvmb_command_vgpu_to_host hdr;
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 4babb21f38a9..fa880aa0196a 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -1961,6 +1961,119 @@ dxgkio_destroy_allocation(struct dxgprocess *process, void *__user inargs)
  	return ret;
  }
@@ -365,10 +365,10 @@ index 4babb21f38a9..fa880aa0196a 100644
  /* 0x2d */	{},
  /* 0x2e */	{dxgkio_set_allocation_priority, LX_DXSETALLOCATIONPRIORITY},
  /* 0x2f */	{},
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index ea18242ceb83..46b9f6d303bf 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -61,6 +61,7 @@ struct winluid {
  #define D3DDDI_MAX_WRITTEN_PRIMARIES		16
  

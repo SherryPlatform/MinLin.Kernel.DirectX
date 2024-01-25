@@ -6,17 +6,17 @@ Subject: [PATCH 35/48] drivers: hv: dxgkrnl: Improve tracing and return values
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgkrnl.h     |  17 +-
- drivers/hv/dxgkrnl/dxgmodule.c   |   1 +
- drivers/hv/dxgkrnl/dxgsyncfile.c |  13 +-
- drivers/hv/dxgkrnl/dxgvmbus.c    |  98 ++++-----
- drivers/hv/dxgkrnl/ioctl.c       | 327 +++++++++++++++----------------
+ dxgkrnl.h     |  17 +-
+ dxgmodule.c   |   1 +
+ dxgsyncfile.c |  13 +-
+ dxgvmbus.c    |  98 ++++-----
+ ioctl.c       | 327 +++++++++++++++----------------
  5 files changed, 225 insertions(+), 231 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index d92e1348ccfb..f63aa6f7a9dc 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -999,18 +999,25 @@ void dxgk_validate_ioctls(void);
  	trace_printk(dev_fmt(fmt) "\n", ##__VA_ARGS__);	\
  }  while (0)
@@ -48,19 +48,19 @@ index d92e1348ccfb..f63aa6f7a9dc 100644
 +} while (0)
 +
  #endif
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 index 5570f35954d4..aa27931a3447 100644
---- a/drivers/hv/dxgkrnl/dxgmodule.c
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
+--- a/dxgmodule.c
++++ b/dxgmodule.c
 @@ -961,3 +961,4 @@ module_exit(dxg_drv_exit);
  
  MODULE_LICENSE("GPL");
  MODULE_DESCRIPTION("Microsoft Dxgkrnl virtual compute device Driver");
 +MODULE_VERSION("2.0.0");
-diff --git a/drivers/hv/dxgkrnl/dxgsyncfile.c b/drivers/hv/dxgkrnl/dxgsyncfile.c
+diff --git a/dxgsyncfile.c b/dxgsyncfile.c
 index 9d5832c90ad7..f3b3e8dd4568 100644
---- a/drivers/hv/dxgkrnl/dxgsyncfile.c
-+++ b/drivers/hv/dxgkrnl/dxgsyncfile.c
+--- a/dxgsyncfile.c
++++ b/dxgsyncfile.c
 @@ -38,13 +38,6 @@
  #undef dev_fmt
  #define dev_fmt(fmt)	"dxgk: " fmt
@@ -102,10 +102,10 @@ index 9d5832c90ad7..f3b3e8dd4568 100644
  	return ret;
  }
  
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 36f4d4e84d3e..566ccb6d01c9 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -1212,7 +1212,7 @@ dxgvmb_send_create_context(struct dxgadapter *adapter,
  				     args->priv_drv_data_size);
  		if (ret) {
@@ -544,10 +544,10 @@ index 36f4d4e84d3e..566ccb6d01c9 100644
  			goto cleanup;
  		}
  	}
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 622904d5c3a9..3dc9e76f4f3d 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -29,13 +29,6 @@ struct ioctl_desc {
  	u32 ioctl;
  };

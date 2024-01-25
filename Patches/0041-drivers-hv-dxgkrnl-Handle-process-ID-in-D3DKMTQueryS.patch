@@ -9,16 +9,16 @@ translated to the host process handle before sending a message to the host.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgkrnl.h    |   3 +-
- drivers/hv/dxgkrnl/dxgprocess.c |   2 +
- drivers/hv/dxgkrnl/dxgvmbus.c   | 140 ++++++++++++++++----------------
- drivers/hv/dxgkrnl/ioctl.c      |  39 ++++++++-
+ dxgkrnl.h    |   3 +-
+ dxgprocess.c |   2 +
+ dxgvmbus.c   | 140 ++++++++++++++++----------------
+ ioctl.c      |  39 ++++++++-
  4 files changed, 111 insertions(+), 73 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index f86e69e37147..dbbb566e2cf0 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -386,6 +386,7 @@ struct dxgprocess {
  	struct list_head	plistentry;
  	pid_t			pid;
@@ -36,10 +36,10 @@ index f86e69e37147..dbbb566e2cf0 100644
  				 struct dxgadapter *adapter,
  				 struct d3dkmt_querystatistics *args);
  int dxgvmb_send_async_msg(struct dxgvmbuschannel *channel,
-diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
+diff --git a/dxgprocess.c b/dxgprocess.c
 index fd51fd968049..5a4c4cb0c2e8 100644
---- a/drivers/hv/dxgkrnl/dxgprocess.c
-+++ b/drivers/hv/dxgkrnl/dxgprocess.c
+--- a/dxgprocess.c
++++ b/dxgprocess.c
 @@ -12,6 +12,7 @@
   */
  
@@ -56,10 +56,10 @@ index fd51fd968049..5a4c4cb0c2e8 100644
  		ret = dxgvmb_send_create_process(process);
  		if (ret < 0) {
  			DXG_TRACE("send_create_process failed");
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index bc8a52606d93..00f633c628aa 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -22,6 +22,8 @@
  #include "dxgkrnl.h"
  #include "dxgvmbus.h"
@@ -688,10 +688,10 @@ index bc8a52606d93..00f633c628aa 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 56b838a87f09..466bef6c14b3 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -147,6 +147,23 @@ static int dxgkio_open_adapter_from_luid(struct dxgprocess *process,
  	return ret;
  }

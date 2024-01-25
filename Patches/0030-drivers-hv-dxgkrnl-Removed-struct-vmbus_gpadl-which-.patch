@@ -6,13 +6,13 @@ Subject: [PATCH 30/48] drivers: hv: dxgkrnl: Removed struct vmbus_gpadl, which
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgadapter.c | 2 +-
+ dxgadapter.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+diff --git a/dxgadapter.c b/dxgadapter.c
 index 6f763e326a65..236febbc6fca 100644
---- a/drivers/hv/dxgkrnl/dxgadapter.c
-+++ b/drivers/hv/dxgkrnl/dxgadapter.c
+--- a/dxgadapter.c
++++ b/dxgadapter.c
 @@ -932,7 +932,7 @@ void dxgallocation_destroy(struct dxgallocation *alloc)
  		vmbus_teardown_gpadl(dxgglobal_get_vmbus(), &alloc->gpadl);
  		alloc->gpadl.gpadl_handle = 0;

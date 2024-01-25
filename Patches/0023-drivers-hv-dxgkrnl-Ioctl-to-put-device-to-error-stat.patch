@@ -15,17 +15,17 @@ ioctl calls to the device will fail.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgkrnl.h  |  3 +++
- drivers/hv/dxgkrnl/dxgvmbus.c | 25 +++++++++++++++++++++++
- drivers/hv/dxgkrnl/dxgvmbus.h |  5 +++++
- drivers/hv/dxgkrnl/ioctl.c    | 38 ++++++++++++++++++++++++++++++++++-
- include/uapi/misc/d3dkmthk.h  | 12 +++++++++++
+ dxgkrnl.h  |  3 +++
+ dxgvmbus.c | 25 +++++++++++++++++++++++
+ dxgvmbus.h |  5 +++++
+ ioctl.c    | 38 ++++++++++++++++++++++++++++++++++-
+ d3dkmthk.h  | 12 +++++++++++
  5 files changed, 82 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index dafc721ed6cf..b454c7430f06 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -856,6 +856,9 @@ int dxgvmb_send_update_alloc_property(struct dxgprocess *process,
  				      struct d3dddi_updateallocproperty *args,
  				      struct d3dddi_updateallocproperty *__user
@@ -36,10 +36,10 @@ index dafc721ed6cf..b454c7430f06 100644
  int dxgvmb_send_set_allocation_priority(struct dxgprocess *process,
  					struct dxgadapter *adapter,
  					struct d3dkmt_setallocationpriority *a);
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 8bdd49bc7aa6..f7264b12a477 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -2730,6 +2730,31 @@ int dxgvmb_send_update_alloc_property(struct dxgprocess *process,
  	return ret;
  }
@@ -72,10 +72,10 @@ index 8bdd49bc7aa6..f7264b12a477 100644
  int dxgvmb_send_set_allocation_priority(struct dxgprocess *process,
  				struct dxgadapter *adapter,
  				struct d3dkmt_setallocationpriority *args)
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index e1c2ed7b1580..a66e11097bb2 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -627,6 +627,11 @@ struct dxgkvmb_command_updateallocationproperty_return {
  	struct ntstatus			status;
  };
@@ -88,10 +88,10 @@ index e1c2ed7b1580..a66e11097bb2 100644
  /* Returns ntstatus */
  struct dxgkvmb_command_changevideomemoryreservation {
  	struct dxgkvmb_command_vgpu_to_host hdr;
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 78de76abce2d..ce4af610ada7 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -3341,6 +3341,42 @@ dxgkio_update_alloc_property(struct dxgprocess *process, void *__user inargs)
  	return ret;
  }
@@ -144,10 +144,10 @@ index 78de76abce2d..ce4af610ada7 100644
  /* 0x27 */	{},
  /* 0x28 */	{},
  /* 0x29 */	{},
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index 749edf28bd43..ce5a638a886d 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -790,6 +790,16 @@ struct d3dkmt_unlock2 {
  	struct d3dkmthandle			allocation;
  };

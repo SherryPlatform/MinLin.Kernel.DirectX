@@ -17,17 +17,17 @@ priority within a process.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgkrnl.h  |   9 ++
- drivers/hv/dxgkrnl/dxgvmbus.c |  67 ++++++++++++-
- drivers/hv/dxgkrnl/dxgvmbus.h |  19 ++++
- drivers/hv/dxgkrnl/ioctl.c    | 177 +++++++++++++++++++++++++++++++++-
- include/uapi/misc/d3dkmthk.h  |  28 ++++++
+ dxgkrnl.h  |   9 ++
+ dxgvmbus.c |  67 ++++++++++++-
+ dxgvmbus.h |  19 ++++
+ ioctl.c    | 177 +++++++++++++++++++++++++++++++++-
+ d3dkmthk.h  |  28 ++++++
  5 files changed, 294 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index 494ea8fb0bb3..02d10bdcc820 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -865,6 +865,15 @@ int dxgvmb_send_set_allocation_priority(struct dxgprocess *process,
  int dxgvmb_send_get_allocation_priority(struct dxgprocess *process,
  					struct dxgadapter *adapter,
@@ -44,10 +44,10 @@ index 494ea8fb0bb3..02d10bdcc820 100644
  int dxgvmb_send_offer_allocations(struct dxgprocess *process,
  				  struct dxgadapter *adapter,
  				  struct d3dkmt_offerallocations *args);
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 8448fd78975b..9a610d48bed7 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -2949,6 +2949,69 @@ int dxgvmb_send_get_allocation_priority(struct dxgprocess *process,
  	return ret;
  }
@@ -136,10 +136,10 @@ index 8448fd78975b..9a610d48bed7 100644
  	return ret;
  }
  
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index 558c6576a262..509482e1f870 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -331,6 +331,25 @@ struct dxgkvmb_command_getallocationpriority_return {
  	/* u32 priorities[allocation_count or 1]; */
  };
@@ -166,10 +166,10 @@ index 558c6576a262..509482e1f870 100644
  struct dxgkvmb_command_createdevice {
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	struct d3dkmt_createdeviceflags	flags;
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index fa880aa0196a..bc0adebe52ae 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -3660,6 +3660,171 @@ dxgkio_get_allocation_priority(struct dxgprocess *process, void *__user inargs)
  	return ret;
  }
@@ -368,10 +368,10 @@ index fa880aa0196a..bc0adebe52ae 100644
  /* 0x31 */	{dxgkio_signal_sync_object_cpu,
  		 LX_DXSIGNALSYNCHRONIZATIONOBJECTFROMCPU},
  /* 0x32 */	{dxgkio_signal_sync_object_gpu,
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index 46b9f6d303bf..a9bafab97c18 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -708,6 +708,26 @@ struct d3dkmt_submitcommandtohwqueue {
  #endif
  };

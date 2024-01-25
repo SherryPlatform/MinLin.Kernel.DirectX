@@ -32,14 +32,14 @@ could be destroyed first.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgmodule.c |   3 +
- drivers/hv/dxgkrnl/ioctl.c     | 482 ++++++++++++++++++++++++++++++++-
+ dxgmodule.c |   3 +
+ ioctl.c     | 482 ++++++++++++++++++++++++++++++++-
  2 files changed, 484 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 index 17c22001ca6c..fbe1c58ecb46 100644
---- a/drivers/hv/dxgkrnl/dxgmodule.c
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
+--- a/dxgmodule.c
++++ b/dxgmodule.c
 @@ -721,6 +721,9 @@ static struct dxgglobal *dxgglobal_create(void)
  
  	init_rwsem(&dxgglobal->channel_lock);
@@ -50,10 +50,10 @@ index 17c22001ca6c..fbe1c58ecb46 100644
  	return dxgglobal;
  }
  
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 60e38d104517..b08ea9430093 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -29,8 +29,472 @@ struct ioctl_desc {
  	u32 arg_size;
  };

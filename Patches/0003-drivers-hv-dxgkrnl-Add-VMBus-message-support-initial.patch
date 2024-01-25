@@ -12,21 +12,21 @@ settings of the VMBus global channel.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgkrnl.h   |  14 ++
- drivers/hv/dxgkrnl/dxgmodule.c |   9 +-
- drivers/hv/dxgkrnl/dxgvmbus.c  | 318 +++++++++++++++++++++++++++++++++
- drivers/hv/dxgkrnl/dxgvmbus.h  |  67 +++++++
- drivers/hv/dxgkrnl/ioctl.c     |  24 +++
- drivers/hv/dxgkrnl/misc.h      |  72 ++++++++
- include/uapi/misc/d3dkmthk.h   |  34 ++++
+ dxgkrnl.h   |  14 ++
+ dxgmodule.c |   9 +-
+ dxgvmbus.c  | 318 +++++++++++++++++++++++++++++++++
+ dxgvmbus.h  |  67 +++++++
+ ioctl.c     |  24 +++
+ misc.h      |  72 ++++++++
+ d3dkmthk.h   |  34 ++++
  7 files changed, 536 insertions(+), 2 deletions(-)
- create mode 100644 drivers/hv/dxgkrnl/ioctl.c
- create mode 100644 drivers/hv/dxgkrnl/misc.h
+ create mode 100644 ioctl.c
+ create mode 100644 misc.h
 
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index f7900840d1ed..52b9e82c51e6 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -28,6 +28,8 @@
  #include <linux/hyperv.h>
  #include <uapi/misc/d3dkmthk.h>
@@ -62,10 +62,10 @@ index f7900840d1ed..52b9e82c51e6 100644
  #ifdef DEBUG
  
  void dxgk_validate_ioctls(void);
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 index de02edc4d023..e55639dc0adc 100644
---- a/drivers/hv/dxgkrnl/dxgmodule.c
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
+--- a/dxgmodule.c
++++ b/dxgmodule.c
 @@ -260,6 +260,13 @@ int dxgglobal_init_global_channel(void)
  		goto error;
  	}
@@ -89,10 +89,10 @@ index de02edc4d023..e55639dc0adc 100644
  		if (dxgglobal->pci_registered)
  			pci_unregister_driver(&dxgdrv.pci_drv);
  
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index deb880e34377..a4365739826a 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -40,6 +40,121 @@ struct dxgvmbuspacket {
  	bool completed;
  };
@@ -426,10 +426,10 @@ index deb880e34377..a4365739826a 100644
 +		DXG_TRACE("Error: %d", ret);
 +	return ret;
  }
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index 6cdca5e03d1f..b1bdd6039b73 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -16,4 +16,71 @@
  
  #define DXG_MAX_VM_BUS_PACKET_SIZE	(1024 * 128)
@@ -502,11 +502,11 @@ index 6cdca5e03d1f..b1bdd6039b73 100644
 +};
 +
  #endif /* _DXGVMBUS_H */
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 new file mode 100644
 index 000000000000..23ecd15b0cd7
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/ioctl.c
++++ b/ioctl.c
 @@ -0,0 +1,24 @@
 +// SPDX-License-Identifier: GPL-2.0
 +
@@ -532,11 +532,11 @@ index 000000000000..23ecd15b0cd7
 +
 +#undef pr_fmt
 +#define pr_fmt(fmt)	"dxgk: " fmt
-diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
+diff --git a/misc.h b/misc.h
 new file mode 100644
 index 000000000000..4c6047c32a20
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/misc.h
++++ b/misc.h
 @@ -0,0 +1,72 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +
@@ -610,10 +610,10 @@ index 000000000000..4c6047c32a20
 +#endif /* DEBUG */
 +
 +#endif /* _MISC_H_ */
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index 5d973604400c..2ea04cc02a1f 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -14,6 +14,40 @@
  #ifndef _D3DKMTHK_H
  #define _D3DKMTHK_H

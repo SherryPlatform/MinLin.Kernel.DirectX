@@ -20,23 +20,23 @@ sync_file object is signaled.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/Kconfig       |   2 +
- drivers/hv/dxgkrnl/Makefile      |   2 +-
- drivers/hv/dxgkrnl/dxgkrnl.h     |   2 +
- drivers/hv/dxgkrnl/dxgmodule.c   |  12 ++
- drivers/hv/dxgkrnl/dxgsyncfile.c | 215 +++++++++++++++++++++++++++++++
- drivers/hv/dxgkrnl/dxgsyncfile.h |  30 +++++
- drivers/hv/dxgkrnl/dxgvmbus.c    |  33 +++--
- drivers/hv/dxgkrnl/ioctl.c       |   5 +-
- include/uapi/misc/d3dkmthk.h     |   9 ++
+ Kconfig       |   2 +
+ Makefile      |   2 +-
+ dxgkrnl.h     |   2 +
+ dxgmodule.c   |  12 ++
+ dxgsyncfile.c | 215 +++++++++++++++++++++++++++++++
+ dxgsyncfile.h |  30 +++++
+ dxgvmbus.c    |  33 +++--
+ ioctl.c       |   5 +-
+ d3dkmthk.h     |   9 ++
  9 files changed, 294 insertions(+), 16 deletions(-)
- create mode 100644 drivers/hv/dxgkrnl/dxgsyncfile.c
- create mode 100644 drivers/hv/dxgkrnl/dxgsyncfile.h
+ create mode 100644 dxgsyncfile.c
+ create mode 100644 dxgsyncfile.h
 
-diff --git a/drivers/hv/dxgkrnl/Kconfig b/drivers/hv/dxgkrnl/Kconfig
+diff --git a/Kconfig b/Kconfig
 index bcd92bbff939..782692610887 100644
---- a/drivers/hv/dxgkrnl/Kconfig
-+++ b/drivers/hv/dxgkrnl/Kconfig
+--- a/Kconfig
++++ b/Kconfig
 @@ -6,6 +6,8 @@ config DXGKRNL
  	tristate "Microsoft Paravirtualized GPU support"
  	depends on HYPERV
@@ -46,20 +46,20 @@ index bcd92bbff939..782692610887 100644
  	help
  	  This driver supports paravirtualized virtual compute devices, exposed
  	  by Microsoft Hyper-V when Linux is running inside of a virtual machine
-diff --git a/drivers/hv/dxgkrnl/Makefile b/drivers/hv/dxgkrnl/Makefile
+diff --git a/Makefile b/Makefile
 index fc85a47a6ad5..89824cda670a 100644
---- a/drivers/hv/dxgkrnl/Makefile
-+++ b/drivers/hv/dxgkrnl/Makefile
+--- a/Makefile
++++ b/Makefile
 @@ -2,4 +2,4 @@
  # Makefile for the hyper-v compute device driver (dxgkrnl).
  
  obj-$(CONFIG_DXGKRNL)	+= dxgkrnl.o
 -dxgkrnl-y := dxgmodule.o hmgr.o misc.o dxgadapter.o ioctl.o dxgvmbus.o dxgprocess.o
 +dxgkrnl-y := dxgmodule.o hmgr.o misc.o dxgadapter.o ioctl.o dxgvmbus.o dxgprocess.o  dxgsyncfile.o
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index 091dbe999d33..3a69e3b34e1c 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -120,6 +120,7 @@ struct dxgpagingqueue {
   */
  enum dxghosteventtype {
@@ -76,10 +76,10 @@ index 091dbe999d33..3a69e3b34e1c 100644
  				     u64 cpu_event);
  int dxgvmb_send_lock2(struct dxgprocess *process,
  		      struct dxgadapter *adapter,
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 index f1245a9d8826..af51fcd35697 100644
---- a/drivers/hv/dxgkrnl/dxgmodule.c
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
+--- a/dxgmodule.c
++++ b/dxgmodule.c
 @@ -16,6 +16,7 @@
  #include <linux/hyperv.h>
  #include <linux/pci.h>
@@ -113,11 +113,11 @@ index f1245a9d8826..af51fcd35697 100644
  			else
  				DXG_ERR("Unknown host event type");
  			break;
-diff --git a/drivers/hv/dxgkrnl/dxgsyncfile.c b/drivers/hv/dxgkrnl/dxgsyncfile.c
+diff --git a/dxgsyncfile.c b/dxgsyncfile.c
 new file mode 100644
 index 000000000000..88fd78f08fbe
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/dxgsyncfile.c
++++ b/dxgsyncfile.c
 @@ -0,0 +1,215 @@
 +// SPDX-License-Identifier: GPL-2.0
 +
@@ -334,11 +334,11 @@ index 000000000000..88fd78f08fbe
 +	.fence_value_str = dxgdmafence_value_str,
 +	.timeline_value_str = dxgdmafence_timeline_value_str,
 +};
-diff --git a/drivers/hv/dxgkrnl/dxgsyncfile.h b/drivers/hv/dxgkrnl/dxgsyncfile.h
+diff --git a/dxgsyncfile.h b/dxgsyncfile.h
 new file mode 100644
 index 000000000000..207ef9b30f67
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/dxgsyncfile.h
++++ b/dxgsyncfile.h
 @@ -0,0 +1,30 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +
@@ -370,10 +370,10 @@ index 000000000000..207ef9b30f67
 +};
 +
 +#endif	 /* _DXGSYNCFILE_H */
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 4d7807909284..913ea3cabb31 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -2820,6 +2820,7 @@ int dxgvmb_send_wait_sync_object_cpu(struct dxgprocess *process,
  				     struct
  				     d3dkmt_waitforsynchronizationobjectfromcpu
@@ -421,10 +421,10 @@ index 4d7807909284..913ea3cabb31 100644
  	}
  
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 8732a66040a0..6c26aafb0619 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -19,6 +19,7 @@
  
  #include "dxgkrnl.h"
@@ -451,10 +451,10 @@ index 8732a66040a0..6c26aafb0619 100644
  };
  
  /*
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index 1f60f5120e1d..c7f168425dc7 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -1554,6 +1554,13 @@ struct d3dkmt_shareobjectwithhost {
  	__u64			object_vail_nt_handle;
  };

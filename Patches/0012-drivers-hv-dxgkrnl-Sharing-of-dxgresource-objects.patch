@@ -30,19 +30,19 @@ ioctl.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgadapter.c |  81 ++++
- drivers/hv/dxgkrnl/dxgkrnl.h    |  77 ++++
- drivers/hv/dxgkrnl/dxgmodule.c  |   1 +
- drivers/hv/dxgkrnl/dxgvmbus.c   | 127 +++++
- drivers/hv/dxgkrnl/dxgvmbus.h   |  30 ++
- drivers/hv/dxgkrnl/ioctl.c      | 792 +++++++++++++++++++++++++++++++-
- include/uapi/misc/d3dkmthk.h    |  96 ++++
+ dxgadapter.c |  81 ++++
+ dxgkrnl.h    |  77 ++++
+ dxgmodule.c  |   1 +
+ dxgvmbus.c   | 127 +++++
+ dxgvmbus.h   |  30 ++
+ ioctl.c      | 792 +++++++++++++++++++++++++++++++-
+ d3dkmthk.h    |  96 ++++
  7 files changed, 1200 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+diff --git a/dxgadapter.c b/dxgadapter.c
 index 04d827a15c54..26fce9aba4f3 100644
---- a/drivers/hv/dxgkrnl/dxgadapter.c
-+++ b/drivers/hv/dxgkrnl/dxgadapter.c
+--- a/dxgadapter.c
++++ b/dxgadapter.c
 @@ -160,6 +160,17 @@ void dxgadapter_remove_process(struct dxgprocess_adapter *process_info)
  	list_del(&process_info->adapter_process_list_entry);
  }
@@ -152,10 +152,10 @@ index 04d827a15c54..26fce9aba4f3 100644
  	}
  	kref_put(&resource->resource_kref, dxgresource_release);
  }
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index 8431523f42de..0336e1843223 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -38,6 +38,7 @@ struct dxgdevice;
  struct dxgcontext;
  struct dxgallocation;
@@ -275,10 +275,10 @@ index 8431523f42de..0336e1843223 100644
  int dxgvmb_send_get_stdalloc_data(struct dxgdevice *device,
  				  enum d3dkmdt_standardallocationtype t,
  				  struct d3dkmdt_gdisurfacedata *data,
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 index 5a5ca8791d27..69e221613af9 100644
---- a/drivers/hv/dxgkrnl/dxgmodule.c
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
+--- a/dxgmodule.c
++++ b/dxgmodule.c
 @@ -258,6 +258,7 @@ int dxgglobal_create_adapter(struct pci_dev *dev, guid_t *guid,
  	init_rwsem(&adapter->core_lock);
  
@@ -287,10 +287,10 @@ index 5a5ca8791d27..69e221613af9 100644
  	INIT_LIST_HEAD(&adapter->syncobj_list_head);
  	init_rwsem(&adapter->shared_resource_list_lock);
  	adapter->pci_dev = dev;
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 6b2dea24a509..b3a4377c8b0b 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -712,6 +712,79 @@ int dxgvmb_send_destroy_process(struct d3dkmthandle process)
  	return ret;
  }
@@ -432,10 +432,10 @@ index 6b2dea24a509..b3a4377c8b0b 100644
  int dxgvmb_send_get_stdalloc_data(struct dxgdevice *device,
  				  enum d3dkmdt_standardallocationtype alloctype,
  				  struct d3dkmdt_gdisurfacedata *alloc_data,
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index 89fecbcefbc8..73d7adac60a1 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -172,6 +172,21 @@ struct dxgkvmb_command_signalguestevent {
  	bool				dereference_event;
  };
@@ -480,10 +480,10 @@ index 89fecbcefbc8..73d7adac60a1 100644
  struct dxgkvmb_command_getstandardallocprivdata {
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	enum d3dkmdt_standardallocationtype alloc_type;
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 0025e1ee2d4d..abb64f6c3a59 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -36,8 +36,35 @@ static char *errorstr(int ret)
  }
  #endif
@@ -1344,10 +1344,10 @@ index 0025e1ee2d4d..abb64f6c3a59 100644
  /* 0x43 */	{},
  /* 0x44 */	{},
  /* 0x45 */	{},
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index 39055b0c1069..f74564cf7ee9 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -682,6 +682,94 @@ enum d3dkmt_deviceexecution_state {
  	_D3DKMT_DEVICEEXECUTION_ERROR_DMAPAGEFAULT	= 7,
  };

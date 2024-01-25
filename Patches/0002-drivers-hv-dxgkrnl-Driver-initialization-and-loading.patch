@@ -37,21 +37,21 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  MAINTAINERS                    |   7 +
  drivers/hv/Kconfig             |   2 +
  drivers/hv/Makefile            |   1 +
- drivers/hv/dxgkrnl/Kconfig     |  26 ++
- drivers/hv/dxgkrnl/Makefile    |   5 +
- drivers/hv/dxgkrnl/dxgkrnl.h   | 155 ++++++++++
- drivers/hv/dxgkrnl/dxgmodule.c | 506 +++++++++++++++++++++++++++++++++
- drivers/hv/dxgkrnl/dxgvmbus.c  |  92 ++++++
- drivers/hv/dxgkrnl/dxgvmbus.h  |  19 ++
- include/uapi/misc/d3dkmthk.h   |  27 ++
+ Kconfig     |  26 ++
+ Makefile    |   5 +
+ dxgkrnl.h   | 155 ++++++++++
+ dxgmodule.c | 506 +++++++++++++++++++++++++++++++++
+ dxgvmbus.c  |  92 ++++++
+ dxgvmbus.h  |  19 ++
+ d3dkmthk.h   |  27 ++
  10 files changed, 840 insertions(+)
- create mode 100644 drivers/hv/dxgkrnl/Kconfig
- create mode 100644 drivers/hv/dxgkrnl/Makefile
- create mode 100644 drivers/hv/dxgkrnl/dxgkrnl.h
- create mode 100644 drivers/hv/dxgkrnl/dxgmodule.c
- create mode 100644 drivers/hv/dxgkrnl/dxgvmbus.c
- create mode 100644 drivers/hv/dxgkrnl/dxgvmbus.h
- create mode 100644 include/uapi/misc/d3dkmthk.h
+ create mode 100644 Kconfig
+ create mode 100644 Makefile
+ create mode 100644 dxgkrnl.h
+ create mode 100644 dxgmodule.c
+ create mode 100644 dxgvmbus.c
+ create mode 100644 dxgvmbus.h
+ create mode 100644 d3dkmthk.h
 
 diff --git a/MAINTAINERS b/MAINTAINERS
 index 3b79fd441dde..0b296ebd0472 100644
@@ -65,8 +65,8 @@ index 3b79fd441dde..0b296ebd0472 100644
 +M:	Iouri Tarassov <iourit@microsoft.com>
 +L:	linux-hyperv@vger.kernel.org
 +S:	Supported
-+F:	drivers/hv/dxgkrnl/
-+F:	include/uapi/misc/d3dkmthk.h
++F:	
++F:	d3dkmthk.h
 +
  HYPERVISOR VIRTUAL CONSOLE DRIVER
  L:	linuxppc-dev@lists.ozlabs.org
@@ -79,7 +79,7 @@ index d1123ceb38f3..5aa411cecf93 100644
  	help
  	  Select this option to enable Hyper-V Balloon driver.
  
-+source "drivers/hv/dxgkrnl/Kconfig"
++source "Kconfig"
 +
  endmenu
 diff --git a/drivers/hv/Makefile b/drivers/hv/Makefile
@@ -94,11 +94,11 @@ index d76df5c8c2a9..aa1cbdb5d0d2 100644
  
  CFLAGS_hv_trace.o = -I$(src)
  CFLAGS_hv_balloon.o = -I$(src)
-diff --git a/drivers/hv/dxgkrnl/Kconfig b/drivers/hv/dxgkrnl/Kconfig
+diff --git a/Kconfig b/Kconfig
 new file mode 100644
 index 000000000000..bcd92bbff939
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/Kconfig
++++ b/Kconfig
 @@ -0,0 +1,26 @@
 +# SPDX-License-Identifier: GPL-2.0
 +# Configuration for the hyper-v virtual compute driver (dxgkrnl)
@@ -126,22 +126,22 @@ index 000000000000..bcd92bbff939
 +	  to the driver IOCTLs. The virtual GPU devices are paravirtualized,
 +	  which means that access to the hardware is done in the host. The driver
 +	  communicates with the host using Hyper-V VM bus communication channels.
-diff --git a/drivers/hv/dxgkrnl/Makefile b/drivers/hv/dxgkrnl/Makefile
+diff --git a/Makefile b/Makefile
 new file mode 100644
 index 000000000000..76349064b60a
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/Makefile
++++ b/Makefile
 @@ -0,0 +1,5 @@
 +# SPDX-License-Identifier: GPL-2.0
 +# Makefile for the hyper-v compute device driver (dxgkrnl).
 +
 +obj-$(CONFIG_DXGKRNL)	+= dxgkrnl.o
 +dxgkrnl-y		:= dxgmodule.o dxgvmbus.o
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 new file mode 100644
 index 000000000000..f7900840d1ed
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -0,0 +1,155 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +
@@ -298,11 +298,11 @@ index 000000000000..f7900840d1ed
 +#endif /* DEBUG */
 +
 +#endif
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 new file mode 100644
 index 000000000000..de02edc4d023
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
++++ b/dxgmodule.c
 @@ -0,0 +1,506 @@
 +// SPDX-License-Identifier: GPL-2.0
 +
@@ -810,11 +810,11 @@ index 000000000000..de02edc4d023
 +
 +MODULE_LICENSE("GPL");
 +MODULE_DESCRIPTION("Microsoft Dxgkrnl virtual compute device Driver");
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 new file mode 100644
 index 000000000000..deb880e34377
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -0,0 +1,92 @@
 +// SPDX-License-Identifier: GPL-2.0
 +
@@ -908,11 +908,11 @@ index 000000000000..deb880e34377
 +void dxgvmbuschannel_receive(void *ctx)
 +{
 +}
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 new file mode 100644
 index 000000000000..6cdca5e03d1f
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -0,0 +1,19 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +
@@ -933,11 +933,11 @@ index 000000000000..6cdca5e03d1f
 +#define DXG_MAX_VM_BUS_PACKET_SIZE	(1024 * 128)
 +
 +#endif /* _DXGVMBUS_H */
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 new file mode 100644
 index 000000000000..5d973604400c
 --- /dev/null
-+++ b/include/uapi/misc/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -0,0 +1,27 @@
 +/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 +

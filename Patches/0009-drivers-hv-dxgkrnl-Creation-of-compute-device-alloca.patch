@@ -30,20 +30,20 @@ its content is stored in the backing store in system memory.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgadapter.c | 282 ++++++++++++++
- drivers/hv/dxgkrnl/dxgkrnl.h    | 113 ++++++
- drivers/hv/dxgkrnl/dxgmodule.c  |   1 +
- drivers/hv/dxgkrnl/dxgvmbus.c   | 649 ++++++++++++++++++++++++++++++++
- drivers/hv/dxgkrnl/dxgvmbus.h   | 123 ++++++
- drivers/hv/dxgkrnl/ioctl.c      | 631 ++++++++++++++++++++++++++++++-
- drivers/hv/dxgkrnl/misc.h       |   3 +
- include/uapi/misc/d3dkmthk.h    | 204 ++++++++++
+ dxgadapter.c | 282 ++++++++++++++
+ dxgkrnl.h    | 113 ++++++
+ dxgmodule.c  |   1 +
+ dxgvmbus.c   | 649 ++++++++++++++++++++++++++++++++
+ dxgvmbus.h   | 123 ++++++
+ ioctl.c      | 631 ++++++++++++++++++++++++++++++-
+ misc.h       |   3 +
+ d3dkmthk.h    | 204 ++++++++++
  8 files changed, 2004 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+diff --git a/dxgadapter.c b/dxgadapter.c
 index cd103e092ac2..402caa81a5db 100644
---- a/drivers/hv/dxgkrnl/dxgadapter.c
-+++ b/drivers/hv/dxgkrnl/dxgadapter.c
+--- a/dxgadapter.c
++++ b/dxgadapter.c
 @@ -207,8 +207,11 @@ struct dxgdevice *dxgdevice_create(struct dxgadapter *adapter,
  		device->process = process;
  		kref_get(&adapter->adapter_kref);
@@ -370,10 +370,10 @@ index cd103e092ac2..402caa81a5db 100644
  struct dxgprocess_adapter *dxgprocess_adapter_create(struct dxgprocess *process,
  						     struct dxgadapter *adapter)
  {
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index a3d8d3c9f37d..fa053fb6ac9c 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -36,6 +36,8 @@ struct dxgprocess;
  struct dxgadapter;
  struct dxgdevice;
@@ -535,10 +535,10 @@ index a3d8d3c9f37d..fa053fb6ac9c 100644
  int dxgvmb_send_async_msg(struct dxgvmbuschannel *channel,
  			  void *command,
  			  u32 cmd_size);
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 index fbe1c58ecb46..053ce6f3e083 100644
---- a/drivers/hv/dxgkrnl/dxgmodule.c
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
+--- a/dxgmodule.c
++++ b/dxgmodule.c
 @@ -162,6 +162,7 @@ int dxgglobal_create_adapter(struct pci_dev *dev, guid_t *guid,
  	init_rwsem(&adapter->core_lock);
  
@@ -547,10 +547,10 @@ index fbe1c58ecb46..053ce6f3e083 100644
  	adapter->pci_dev = dev;
  	guid_to_luid(guid, &adapter->luid);
  
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index e66aac7c13cb..14b51a3c6afc 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -111,6 +111,41 @@ static int init_message(struct dxgvmbusmsg *msg, struct dxgadapter *adapter,
  	return 0;
  }
@@ -1214,10 +1214,10 @@ index e66aac7c13cb..14b51a3c6afc 100644
  int dxgvmb_send_query_adapter_info(struct dxgprocess *process,
  				   struct dxgadapter *adapter,
  				   struct d3dkmt_queryadapterinfo *args)
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index ebcb7b0f62c1..4b7466d1b9f2 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -173,6 +173,14 @@ struct dxgkvmb_command_setiospaceregion {
  	u32				shared_page_gpadl;
  };
@@ -1355,10 +1355,10 @@ index ebcb7b0f62c1..4b7466d1b9f2 100644
  struct dxgkvmb_command_createcontextvirtual {
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	struct d3dkmthandle		context;
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 5d10ebd2ce6a..0eaa577d7ed4 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -714,6 +714,633 @@ dxgkio_destroy_context(struct dxgprocess *process, void *__user inargs)
  	return ret;
  }
@@ -2011,10 +2011,10 @@ index 5d10ebd2ce6a..0eaa577d7ed4 100644
  /* 0x14 */	{dxgkio_enum_adapters, LX_DXENUMADAPTERS2},
  /* 0x15 */	{dxgkio_close_adapter, LX_DXCLOSEADAPTER},
  /* 0x16 */	{},
-diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
+diff --git a/misc.h b/misc.h
 index 3a9637f0b5e2..a51b29a6a68f 100644
---- a/drivers/hv/dxgkrnl/misc.h
-+++ b/drivers/hv/dxgkrnl/misc.h
+--- a/misc.h
++++ b/misc.h
 @@ -30,6 +30,9 @@ extern const struct d3dkmthandle zerohandle;
   * plistmutex (process list mutex)
   * table_lock (handle table lock)
@@ -2025,10 +2025,10 @@ index 3a9637f0b5e2..a51b29a6a68f 100644
   * core_lock (dxgadapter lock)
   * device_lock (dxgdevice lock)
   * process_adapter_mutex
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index 4ba0070b061f..cf670b9c4dc2 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -58,6 +58,7 @@ struct winluid {
  	__u32 b;
  };

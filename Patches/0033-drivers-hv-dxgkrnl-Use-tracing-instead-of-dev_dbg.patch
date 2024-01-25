@@ -5,19 +5,19 @@ Subject: [PATCH 33/48] drivers: hv: dxgkrnl: Use tracing instead of dev_dbg
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgadapter.c |  4 ++--
- drivers/hv/dxgkrnl/dxgmodule.c  |  5 ++++-
- drivers/hv/dxgkrnl/dxgprocess.c |  6 +++---
- drivers/hv/dxgkrnl/dxgvmbus.c   |  4 ++--
- drivers/hv/dxgkrnl/hmgr.c       | 16 ++++++++--------
- drivers/hv/dxgkrnl/ioctl.c      |  8 ++++----
- drivers/hv/dxgkrnl/misc.c       |  4 ++--
+ dxgadapter.c |  4 ++--
+ dxgmodule.c  |  5 ++++-
+ dxgprocess.c |  6 +++---
+ dxgvmbus.c   |  4 ++--
+ hmgr.c       | 16 ++++++++--------
+ ioctl.c      |  8 ++++----
+ misc.c       |  4 ++--
  7 files changed, 25 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+diff --git a/dxgadapter.c b/dxgadapter.c
 index 236febbc6fca..3d8bec295b87 100644
---- a/drivers/hv/dxgkrnl/dxgadapter.c
-+++ b/drivers/hv/dxgkrnl/dxgadapter.c
+--- a/dxgadapter.c
++++ b/dxgadapter.c
 @@ -18,8 +18,8 @@
  
  #include "dxgkrnl.h"
@@ -29,10 +29,10 @@ index 236febbc6fca..3d8bec295b87 100644
  
  int dxgadapter_set_vmbus(struct dxgadapter *adapter, struct hv_device *hdev)
  {
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 index af51fcd35697..08feae97e845 100644
---- a/drivers/hv/dxgkrnl/dxgmodule.c
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
+--- a/dxgmodule.c
++++ b/dxgmodule.c
 @@ -24,6 +24,9 @@
  #undef pr_fmt
  #define pr_fmt(fmt)	"dxgk: " fmt
@@ -52,10 +52,10 @@ index af51fcd35697..08feae97e845 100644
  #define DXGK_VMBUS_GUESTCAPS_OFFSET	(DXGK_VMBUS_VERSION_OFFSET + \
  					sizeof(u32))
  
-diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
+diff --git a/dxgprocess.c b/dxgprocess.c
 index 5de3f8ccb448..afef196c0588 100644
---- a/drivers/hv/dxgkrnl/dxgprocess.c
-+++ b/drivers/hv/dxgkrnl/dxgprocess.c
+--- a/dxgprocess.c
++++ b/dxgprocess.c
 @@ -13,8 +13,8 @@
  
  #include "dxgkrnl.h"
@@ -76,10 +76,10 @@ index 5de3f8ccb448..afef196c0588 100644
  	else if (kref_get_unless_zero(&adapter->adapter_kref) == 0) {
  		DXG_ERR("failed to acquire adapter reference");
  		adapter = NULL;
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 913ea3cabb31..d53d4254be63 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -22,8 +22,8 @@
  #include "dxgkrnl.h"
  #include "dxgvmbus.h"
@@ -91,10 +91,10 @@ index 913ea3cabb31..d53d4254be63 100644
  
  #define RING_BUFSIZE (256 * 1024)
  
-diff --git a/drivers/hv/dxgkrnl/hmgr.c b/drivers/hv/dxgkrnl/hmgr.c
+diff --git a/hmgr.c b/hmgr.c
 index 526b50f46d96..24101d0091ab 100644
---- a/drivers/hv/dxgkrnl/hmgr.c
-+++ b/drivers/hv/dxgkrnl/hmgr.c
+--- a/hmgr.c
++++ b/hmgr.c
 @@ -19,8 +19,8 @@
  #include "dxgkrnl.h"
  #include "hmgr.h"
@@ -150,10 +150,10 @@ index 526b50f46d96..24101d0091ab 100644
  		return NULL;
  	}
  	return table->entry_table[get_index(h)].object;
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 6c26aafb0619..4db23cd55b24 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -21,8 +21,8 @@
  #include "dxgvmbus.h"
  #include "dxgsyncfile.h"
@@ -183,10 +183,10 @@ index 6c26aafb0619..4db23cd55b24 100644
  		DXG_ERR("bad ioctl %x %x %x %x",
  			code, _IOC_TYPE(p1), _IOC_SIZE(p1), _IOC_DIR(p1));
  		return -ENOTTY;
-diff --git a/drivers/hv/dxgkrnl/misc.c b/drivers/hv/dxgkrnl/misc.c
+diff --git a/misc.c b/misc.c
 index 4a1309d80ee5..4bf6fe80d22a 100644
---- a/drivers/hv/dxgkrnl/misc.c
-+++ b/drivers/hv/dxgkrnl/misc.c
+--- a/misc.c
++++ b/misc.c
 @@ -18,8 +18,8 @@
  #include "dxgkrnl.h"
  #include "misc.h"

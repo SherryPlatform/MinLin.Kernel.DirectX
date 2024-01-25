@@ -19,20 +19,20 @@ value.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgadapter.c | 181 ++++++++++-
- drivers/hv/dxgkrnl/dxgkrnl.h    |  96 ++++++
- drivers/hv/dxgkrnl/dxgmodule.c  |   1 +
- drivers/hv/dxgkrnl/dxgprocess.c |   4 +
- drivers/hv/dxgkrnl/dxgvmbus.c   | 221 +++++++++++++
- drivers/hv/dxgkrnl/dxgvmbus.h   |  35 ++
- drivers/hv/dxgkrnl/ioctl.c      | 556 +++++++++++++++++++++++++++++++-
- include/uapi/misc/d3dkmthk.h    |  93 ++++++
+ dxgadapter.c | 181 ++++++++++-
+ dxgkrnl.h    |  96 ++++++
+ dxgmodule.c  |   1 +
+ dxgprocess.c |   4 +
+ dxgvmbus.c   | 221 +++++++++++++
+ dxgvmbus.h   |  35 ++
+ ioctl.c      | 556 +++++++++++++++++++++++++++++++-
+ d3dkmthk.h    |  93 ++++++
  8 files changed, 1181 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+diff --git a/dxgadapter.c b/dxgadapter.c
 index 26fce9aba4f3..f59173f13559 100644
---- a/drivers/hv/dxgkrnl/dxgadapter.c
-+++ b/drivers/hv/dxgkrnl/dxgadapter.c
+--- a/dxgadapter.c
++++ b/dxgadapter.c
 @@ -171,6 +171,26 @@ void dxgadapter_remove_shared_resource(struct dxgadapter *adapter,
  	up_write(&adapter->shared_resource_list_lock);
  }
@@ -264,10 +264,10 @@ index 26fce9aba4f3..f59173f13559 100644
 +	hwqueue = container_of(refcount, struct dxghwqueue, hwqueue_kref);
 +	kfree(hwqueue);
 +}
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index 0336e1843223..0330352b9c06 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -40,6 +40,8 @@ struct dxgallocation;
  struct dxgresource;
  struct dxgsharedresource;
@@ -432,10 +432,10 @@ index 0336e1843223..0330352b9c06 100644
  int dxgvmb_send_create_nt_shared_object(struct dxgprocess *process,
  					struct d3dkmthandle object,
  					struct d3dkmthandle *shared_handle);
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 index 69e221613af9..8cbe1095599f 100644
---- a/drivers/hv/dxgkrnl/dxgmodule.c
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
+--- a/dxgmodule.c
++++ b/dxgmodule.c
 @@ -259,6 +259,7 @@ int dxgglobal_create_adapter(struct pci_dev *dev, guid_t *guid,
  
  	INIT_LIST_HEAD(&adapter->adapter_process_list_head);
@@ -444,10 +444,10 @@ index 69e221613af9..8cbe1095599f 100644
  	INIT_LIST_HEAD(&adapter->syncobj_list_head);
  	init_rwsem(&adapter->shared_resource_list_lock);
  	adapter->pci_dev = dev;
-diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
+diff --git a/dxgprocess.c b/dxgprocess.c
 index a41985ef438d..4021084ebd78 100644
---- a/drivers/hv/dxgkrnl/dxgprocess.c
-+++ b/drivers/hv/dxgkrnl/dxgprocess.c
+--- a/dxgprocess.c
++++ b/dxgprocess.c
 @@ -277,6 +277,10 @@ struct dxgdevice *dxgprocess_device_by_object_handle(struct dxgprocess *process,
  			device_handle =
  			    ((struct dxgcontext *)obj)->device_handle;
@@ -459,10 +459,10 @@ index a41985ef438d..4021084ebd78 100644
  		default:
  			DXG_ERR("invalid handle type: %d", t);
  			break;
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index b3a4377c8b0b..e83600945de1 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -712,6 +712,69 @@ int dxgvmb_send_destroy_process(struct d3dkmthandle process)
  	return ret;
  }
@@ -698,10 +698,10 @@ index b3a4377c8b0b..e83600945de1 100644
  int dxgvmb_send_query_adapter_info(struct dxgprocess *process,
  				   struct dxgadapter *adapter,
  				   struct d3dkmt_queryadapterinfo *args)
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index 73d7adac60a1..2e2fd1ae5ec2 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -172,6 +172,21 @@ struct dxgkvmb_command_signalguestevent {
  	bool				dereference_event;
  };
@@ -749,10 +749,10 @@ index 73d7adac60a1..2e2fd1ae5ec2 100644
 +};
 +
  #endif /* _DXGVMBUS_H */
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index abb64f6c3a59..3cfc1c40e0bb 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -36,6 +36,33 @@ static char *errorstr(int ret)
  }
  #endif
@@ -1423,10 +1423,10 @@ index abb64f6c3a59..3cfc1c40e0bb 100644
  /* 0x41 */	{dxgkio_query_resource_info_nt,
  		 LX_DXQUERYRESOURCEINFOFROMNTHANDLE},
  /* 0x42 */	{dxgkio_open_resource_nt, LX_DXOPENRESOURCEFROMNTHANDLE},
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index f74564cf7ee9..a78252901c8d 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -201,6 +201,16 @@ struct d3dkmt_createcontextvirtual {
  	struct d3dkmthandle		context;
  };

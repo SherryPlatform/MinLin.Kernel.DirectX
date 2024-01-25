@@ -30,37 +30,37 @@ first and its value is assigned to the guest object.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/Makefile     |   2 +-
- drivers/hv/dxgkrnl/dxgadapter.c |  72 ++++
- drivers/hv/dxgkrnl/dxgkrnl.h    |  95 +++++-
- drivers/hv/dxgkrnl/dxgmodule.c  |  97 ++++++
- drivers/hv/dxgkrnl/dxgprocess.c | 262 +++++++++++++++
- drivers/hv/dxgkrnl/dxgvmbus.c   | 164 ++++++++++
- drivers/hv/dxgkrnl/dxgvmbus.h   |  36 ++
- drivers/hv/dxgkrnl/hmgr.c       | 563 ++++++++++++++++++++++++++++++++
- drivers/hv/dxgkrnl/hmgr.h       | 112 +++++++
- drivers/hv/dxgkrnl/ioctl.c      |  60 ++++
- drivers/hv/dxgkrnl/misc.h       |   9 +-
- include/uapi/misc/d3dkmthk.h    | 103 ++++++
+ Makefile     |   2 +-
+ dxgadapter.c |  72 ++++
+ dxgkrnl.h    |  95 +++++-
+ dxgmodule.c  |  97 ++++++
+ dxgprocess.c | 262 +++++++++++++++
+ dxgvmbus.c   | 164 ++++++++++
+ dxgvmbus.h   |  36 ++
+ hmgr.c       | 563 ++++++++++++++++++++++++++++++++
+ hmgr.h       | 112 +++++++
+ ioctl.c      |  60 ++++
+ misc.h       |   9 +-
+ d3dkmthk.h    | 103 ++++++
  12 files changed, 1569 insertions(+), 6 deletions(-)
- create mode 100644 drivers/hv/dxgkrnl/dxgprocess.c
- create mode 100644 drivers/hv/dxgkrnl/hmgr.c
- create mode 100644 drivers/hv/dxgkrnl/hmgr.h
+ create mode 100644 dxgprocess.c
+ create mode 100644 hmgr.c
+ create mode 100644 hmgr.h
 
-diff --git a/drivers/hv/dxgkrnl/Makefile b/drivers/hv/dxgkrnl/Makefile
+diff --git a/Makefile b/Makefile
 index 2ed07d877c91..9d821e83448a 100644
---- a/drivers/hv/dxgkrnl/Makefile
-+++ b/drivers/hv/dxgkrnl/Makefile
+--- a/Makefile
++++ b/Makefile
 @@ -2,4 +2,4 @@
  # Makefile for the hyper-v compute device driver (dxgkrnl).
  
  obj-$(CONFIG_DXGKRNL)	+= dxgkrnl.o
 -dxgkrnl-y		:= dxgmodule.o misc.o dxgadapter.o ioctl.o dxgvmbus.o
 +dxgkrnl-y		:= dxgmodule.o hmgr.o misc.o dxgadapter.o ioctl.o dxgvmbus.o dxgprocess.o
-diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+diff --git a/dxgadapter.c b/dxgadapter.c
 index 07d47699d255..fa0d6beca157 100644
---- a/drivers/hv/dxgkrnl/dxgadapter.c
-+++ b/drivers/hv/dxgkrnl/dxgadapter.c
+--- a/dxgadapter.c
++++ b/dxgadapter.c
 @@ -100,6 +100,7 @@ void dxgadapter_start(struct dxgadapter *adapter)
  
  void dxgadapter_stop(struct dxgadapter *adapter)
@@ -158,10 +158,10 @@ index 07d47699d255..fa0d6beca157 100644
 +	if (adapter_info->refcount == 0)
 +		dxgprocess_adapter_destroy(adapter_info);
 +}
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index ba2a7c6001aa..b089d126f801 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -29,8 +29,10 @@
  #include <uapi/misc/d3dkmthk.h>
  #include <linux/version.h>
@@ -317,10 +317,10 @@ index ba2a7c6001aa..b089d126f801 100644
  int dxgvmb_send_async_msg(struct dxgvmbuschannel *channel,
  			  void *command,
  			  u32 cmd_size);
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 index ef80b920f010..17c22001ca6c 100644
---- a/drivers/hv/dxgkrnl/dxgmodule.c
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
+--- a/dxgmodule.c
++++ b/dxgmodule.c
 @@ -123,6 +123,20 @@ static struct dxgadapter *find_adapter(struct winluid *luid)
  	return adapter;
  }
@@ -449,11 +449,11 @@ index ef80b920f010..17c22001ca6c 100644
  
  	INIT_LIST_HEAD(&dxgglobal->vgpu_ch_list_head);
  	INIT_LIST_HEAD(&dxgglobal->adapter_list_head);
-diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
+diff --git a/dxgprocess.c b/dxgprocess.c
 new file mode 100644
 index 000000000000..ab9a01e3c8c8
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/dxgprocess.c
++++ b/dxgprocess.c
 @@ -0,0 +1,262 @@
 +// SPDX-License-Identifier: GPL-2.0
 +
@@ -717,10 +717,10 @@ index 000000000000..ab9a01e3c8c8
 +{
 +	hmgrtable_unlock(&process->handle_table, DXGLOCK_EXCL);
 +}
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 6d4b8d9d8d07..0abf45d0d3f7 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -497,6 +497,87 @@ int dxgvmb_send_set_iospace_region(u64 start, u64 len)
  	return ret;
  }
@@ -896,10 +896,10 @@ index 6d4b8d9d8d07..0abf45d0d3f7 100644
 +		DXG_TRACE("err: %d", ret);
 +	return ret;
 +}
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index 584cdd3db6c0..a805a396e083 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -14,7 +14,11 @@
  #ifndef _DXGVMBUS_H
  #define _DXGVMBUS_H
@@ -956,11 +956,11 @@ index 584cdd3db6c0..a805a396e083 100644
 +};
 +
  #endif /* _DXGVMBUS_H */
-diff --git a/drivers/hv/dxgkrnl/hmgr.c b/drivers/hv/dxgkrnl/hmgr.c
+diff --git a/hmgr.c b/hmgr.c
 new file mode 100644
 index 000000000000..526b50f46d96
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/hmgr.c
++++ b/hmgr.c
 @@ -0,0 +1,563 @@
 +// SPDX-License-Identifier: GPL-2.0
 +
@@ -1525,11 +1525,11 @@ index 000000000000..526b50f46d96
 +	}
 +	return false;
 +}
-diff --git a/drivers/hv/dxgkrnl/hmgr.h b/drivers/hv/dxgkrnl/hmgr.h
+diff --git a/hmgr.h b/hmgr.h
 new file mode 100644
 index 000000000000..23eec301137f
 --- /dev/null
-+++ b/drivers/hv/dxgkrnl/hmgr.h
++++ b/hmgr.h
 @@ -0,0 +1,112 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +
@@ -1643,10 +1643,10 @@ index 000000000000..23eec301137f
 +			  void **object);
 +
 +#endif
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 23ecd15b0cd7..60e38d104517 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -22,3 +22,63 @@
  
  #undef pr_fmt
@@ -1711,10 +1711,10 @@ index 23ecd15b0cd7..60e38d104517 100644
 +	DXG_TRACE("unlocked ioctl %x Code:%d", p1, _IOC_NR(p1));
 +	return dxgk_ioctl(f, p1, p2);
 +}
-diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
+diff --git a/misc.h b/misc.h
 index d292e9a9bb7f..dc849a8ed3f2 100644
---- a/drivers/hv/dxgkrnl/misc.h
-+++ b/drivers/hv/dxgkrnl/misc.h
+--- a/misc.h
++++ b/misc.h
 @@ -27,10 +27,11 @@ extern const struct d3dkmthandle zerohandle;
   *
   * channel_lock (VMBus channel lock)
@@ -1731,10 +1731,10 @@ index d292e9a9bb7f..dc849a8ed3f2 100644
   * adapter_list_lock
   * device_mutex (dxgglobal mutex)
   */
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index 2ea04cc02a1f..c675d5827ed5 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -58,4 +58,107 @@ struct winluid {
  	__u32 b;
  };

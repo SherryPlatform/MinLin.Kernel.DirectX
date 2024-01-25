@@ -9,17 +9,17 @@ supported by the given adapter.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgkrnl.h  |  2 ++
- drivers/hv/dxgkrnl/dxgvmbus.c | 58 ++++++++++++++++++++++++++++++++---
- drivers/hv/dxgkrnl/dxgvmbus.h | 31 +++++++++++++++++++
- drivers/hv/dxgkrnl/ioctl.c    | 46 +++++++++++++++++++++++++++
- include/uapi/misc/d3dkmthk.h  | 31 ++++++++++++++++++-
+ dxgkrnl.h  |  2 ++
+ dxgvmbus.c | 58 ++++++++++++++++++++++++++++++++---
+ dxgvmbus.h | 31 +++++++++++++++++++
+ ioctl.c    | 46 +++++++++++++++++++++++++++
+ d3dkmthk.h  | 31 ++++++++++++++++++-
  5 files changed, 163 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index dcc56bc84e0d..39fa803a0247 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -998,6 +998,8 @@ int dxgvmb_send_share_object_with_host(struct dxgprocess *process,
  int dxgvmb_send_invalidate_cache(struct dxgprocess *process,
  				struct dxgadapter *adapter,
@@ -29,10 +29,10 @@ index dcc56bc84e0d..39fa803a0247 100644
  
  void signal_host_cpu_event(struct dxghostevent *eventhdr);
  int ntstatus2int(struct ntstatus status);
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 00f633c628aa..c5a710b68393 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -135,15 +135,16 @@ static int init_message_res(struct dxgvmbusmsgres *msg,
  	if (use_ext_header) {
  		msg->msg = (char *)&msg->hdr[1];
@@ -110,10 +110,10 @@ index 00f633c628aa..c5a710b68393 100644
  int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
  				      struct dxgadapter *adapter,
  				      struct d3dkmt_queryallocationresidency
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index 20c562b485de..a7e625b2f896 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -48,6 +48,7 @@ enum dxgkvmb_commandtype_global {
  	DXGK_VMBCOMMAND_SETIOSPACEREGION	= 1010,
  	DXGK_VMBCOMMAND_COMPLETETRANSACTION	= 1011,
@@ -166,10 +166,10 @@ index 20c562b485de..a7e625b2f896 100644
  int
  dxgvmb_send_sync_msg(struct dxgvmbuschannel *channel,
  		     void *command, u32 command_size, void *result,
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 24b84be2fb73..5ff4b27af19d 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -5318,6 +5318,51 @@ dxgkio_enum_processes(struct dxgprocess *process, void *__user inargs)
  	return ret;
  }
@@ -230,10 +230,10 @@ index 24b84be2fb73..5ff4b27af19d 100644
  };
  
  /*
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index f9f817060fa9..5b345ddaf66e 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -1580,7 +1580,7 @@ struct d3dkmt_opensyncobjectfromsyncfile {
  	__u64			fence_value_gpu_va;	/* out */
  };

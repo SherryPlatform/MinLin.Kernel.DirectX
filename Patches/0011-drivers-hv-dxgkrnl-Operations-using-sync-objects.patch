@@ -35,20 +35,20 @@ asynchronously when the host supports it.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgadapter.c |  38 +-
- drivers/hv/dxgkrnl/dxgkrnl.h    |  62 +++
- drivers/hv/dxgkrnl/dxgmodule.c  | 102 ++++-
- drivers/hv/dxgkrnl/dxgvmbus.c   | 219 +++++++++-
- drivers/hv/dxgkrnl/dxgvmbus.h   |  48 +++
- drivers/hv/dxgkrnl/ioctl.c      | 702 +++++++++++++++++++++++++++++++-
- drivers/hv/dxgkrnl/misc.h       |   2 +
- include/uapi/misc/d3dkmthk.h    | 159 ++++++++
+ dxgadapter.c |  38 +-
+ dxgkrnl.h    |  62 +++
+ dxgmodule.c  | 102 ++++-
+ dxgvmbus.c   | 219 +++++++++-
+ dxgvmbus.h   |  48 +++
+ ioctl.c      | 702 +++++++++++++++++++++++++++++++-
+ misc.h       |   2 +
+ d3dkmthk.h    | 159 ++++++++
  8 files changed, 1311 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+diff --git a/dxgadapter.c b/dxgadapter.c
 index d2f2b96527e6..04d827a15c54 100644
---- a/drivers/hv/dxgkrnl/dxgadapter.c
-+++ b/drivers/hv/dxgkrnl/dxgadapter.c
+--- a/dxgadapter.c
++++ b/dxgadapter.c
 @@ -249,7 +249,7 @@ void dxgdevice_stop(struct dxgdevice *device)
  	struct dxgallocation *alloc;
  	struct dxgsyncobject *syncobj;
@@ -152,10 +152,10 @@ index d2f2b96527e6..04d827a15c54 100644
 +		kfree(syncobj->host_event);
  	kfree(syncobj);
  }
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index 1b9410c9152b..8431523f42de 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -101,6 +101,29 @@ int dxgvmbuschannel_init(struct dxgvmbuschannel *ch, struct hv_device *hdev);
  void dxgvmbuschannel_destroy(struct dxgvmbuschannel *ch);
  void dxgvmbuschannel_receive(void *ctx);
@@ -267,10 +267,10 @@ index 1b9410c9152b..8431523f42de 100644
  int ntstatus2int(struct ntstatus status);
  
  #ifdef DEBUG
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 index 9bc8931c5043..5a5ca8791d27 100644
---- a/drivers/hv/dxgkrnl/dxgmodule.c
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
+--- a/dxgmodule.c
++++ b/dxgmodule.c
 @@ -123,6 +123,102 @@ static struct dxgadapter *find_adapter(struct winluid *luid)
  	return adapter;
  }
@@ -392,10 +392,10 @@ index 9bc8931c5043..5a5ca8791d27 100644
  	return dxgglobal;
  }
  
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index d323afc85249..6b2dea24a509 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -281,6 +281,22 @@ static void command_vm_to_host_init1(struct dxgkvmb_command_vm_to_host *command,
  	command->channel_type = DXGKVMB_VM_TO_HOST;
  }
@@ -643,10 +643,10 @@ index d323afc85249..6b2dea24a509 100644
  int dxgvmb_send_query_adapter_info(struct dxgprocess *process,
  				   struct dxgadapter *adapter,
  				   struct d3dkmt_queryadapterinfo *args)
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index bbf5f31cdf81..89fecbcefbc8 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -165,6 +165,13 @@ struct dxgkvmb_command_host_to_vm {
  	enum dxgkvmb_commandtype_host_to_vm	command_type;
  };
@@ -707,10 +707,10 @@ index bbf5f31cdf81..89fecbcefbc8 100644
 +};
 +
  #endif /* _DXGVMBUS_H */
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 4bba1e209f33..0025e1ee2d4d 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -759,7 +759,7 @@ get_standard_alloc_priv_data(struct dxgdevice *device,
  		res_priv_data = vzalloc(res_priv_data_size);
  		if (res_priv_data == NULL) {
@@ -1478,10 +1478,10 @@ index 4bba1e209f33..0025e1ee2d4d 100644
  /* 0x3c */	{},
  /* 0x3d */	{},
  /* 0x3e */	{dxgkio_enum_adapters3, LX_DXENUMADAPTERS3},
-diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
+diff --git a/misc.h b/misc.h
 index a51b29a6a68f..ee2ebfdd1c13 100644
---- a/drivers/hv/dxgkrnl/misc.h
-+++ b/drivers/hv/dxgkrnl/misc.h
+--- a/misc.h
++++ b/misc.h
 @@ -25,6 +25,8 @@ extern const struct d3dkmthandle zerohandle;
   * The locks here are in the order from lowest to highest.
   * When a lower lock is held, the higher lock should not be acquired.
@@ -1491,10 +1491,10 @@ index a51b29a6a68f..ee2ebfdd1c13 100644
   * channel_lock (VMBus channel lock)
   * fd_mutex
   * plistmutex (process list mutex)
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index 4e1069f41d76..39055b0c1069 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -60,6 +60,9 @@ struct winluid {
  
  #define D3DKMT_CREATEALLOCATION_MAX		1024

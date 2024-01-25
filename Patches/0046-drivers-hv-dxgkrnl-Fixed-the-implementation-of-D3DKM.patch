@@ -8,14 +8,14 @@ The result of a VM bus call was not copied to the user output structure.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgvmbus.c | 18 ++++++++++--------
- drivers/hv/dxgkrnl/ioctl.c    |  5 -----
+ dxgvmbus.c | 18 ++++++++++--------
+ ioctl.c    |  5 -----
  2 files changed, 10 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index b67a2e4af8d1..afc6b9588216 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -1974,14 +1974,16 @@ int dxgvmb_send_query_clock_calibration(struct dxgprocess *process,
  					*__user inargs)
  {
@@ -62,10 +62,10 @@ index b67a2e4af8d1..afc6b9588216 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 5ac6dd1f09b9..d91af2e176e9 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -4303,11 +4303,6 @@ dxgkio_query_clock_calibration(struct dxgprocess *process, void *__user inargs)
  						  &args, inargs);
  	if (ret < 0)

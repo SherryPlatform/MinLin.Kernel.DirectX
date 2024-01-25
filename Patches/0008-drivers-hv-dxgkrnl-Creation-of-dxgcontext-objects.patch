@@ -15,20 +15,20 @@ belong to a dxgdevice object.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/dxgadapter.c | 103 ++++++++++++++++++++
- drivers/hv/dxgkrnl/dxgkrnl.h    |  38 ++++++++
- drivers/hv/dxgkrnl/dxgprocess.c |   4 +
- drivers/hv/dxgkrnl/dxgvmbus.c   | 101 ++++++++++++++++++-
- drivers/hv/dxgkrnl/dxgvmbus.h   |  18 ++++
- drivers/hv/dxgkrnl/ioctl.c      | 168 +++++++++++++++++++++++++++++++-
- drivers/hv/dxgkrnl/misc.h       |   1 +
- include/uapi/misc/d3dkmthk.h    |  47 +++++++++
+ dxgadapter.c | 103 ++++++++++++++++++++
+ dxgkrnl.h    |  38 ++++++++
+ dxgprocess.c |   4 +
+ dxgvmbus.c   | 101 ++++++++++++++++++-
+ dxgvmbus.h   |  18 ++++
+ ioctl.c      | 168 +++++++++++++++++++++++++++++++-
+ misc.h       |   1 +
+ d3dkmthk.h    |  47 +++++++++
  8 files changed, 477 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+diff --git a/dxgadapter.c b/dxgadapter.c
 index a9a341716eba..cd103e092ac2 100644
---- a/drivers/hv/dxgkrnl/dxgadapter.c
-+++ b/drivers/hv/dxgkrnl/dxgadapter.c
+--- a/dxgadapter.c
++++ b/dxgadapter.c
 @@ -206,7 +206,9 @@ struct dxgdevice *dxgdevice_create(struct dxgadapter *adapter,
  		device->adapter = adapter;
  		device->process = process;
@@ -161,10 +161,10 @@ index a9a341716eba..cd103e092ac2 100644
  struct dxgprocess_adapter *dxgprocess_adapter_create(struct dxgprocess *process,
  						     struct dxgadapter *adapter)
  {
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index 45ac1f25cc5e..a3d8d3c9f37d 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -35,6 +35,7 @@
  struct dxgprocess;
  struct dxgadapter;
@@ -239,10 +239,10 @@ index 45ac1f25cc5e..a3d8d3c9f37d 100644
  int dxgvmb_send_query_adapter_info(struct dxgprocess *process,
  				   struct dxgadapter *adapter,
  				   struct d3dkmt_queryadapterinfo *args);
-diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
+diff --git a/dxgprocess.c b/dxgprocess.c
 index 8373f681e822..ca307beb9a9a 100644
---- a/drivers/hv/dxgkrnl/dxgprocess.c
-+++ b/drivers/hv/dxgkrnl/dxgprocess.c
+--- a/dxgprocess.c
++++ b/dxgprocess.c
 @@ -257,6 +257,10 @@ struct dxgdevice *dxgprocess_device_by_object_handle(struct dxgprocess *process,
  		case HMGRENTRY_TYPE_DXGDEVICE:
  			device = obj;
@@ -254,10 +254,10 @@ index 8373f681e822..ca307beb9a9a 100644
  		default:
  			DXG_ERR("invalid handle type: %d", t);
  			break;
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 73804d11ec49..e66aac7c13cb 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -731,7 +731,7 @@ int dxgvmb_send_flush_device(struct dxgdevice *device,
  			     enum dxgdevice_flushschedulerreason reason)
  {
@@ -373,10 +373,10 @@ index 73804d11ec49..e66aac7c13cb 100644
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
  cleanup:
  	free_message(&msg, process);
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index 4ccf45765954..ebcb7b0f62c1 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -269,4 +269,22 @@ struct dxgkvmb_command_flushdevice {
  	enum dxgdevice_flushschedulerreason	reason;
  };
@@ -400,10 +400,10 @@ index 4ccf45765954..ebcb7b0f62c1 100644
 +};
 +
  #endif /* _DXGVMBUS_H */
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 405e8b92913e..5d10ebd2ce6a 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -550,13 +550,177 @@ dxgkio_destroy_device(struct dxgprocess *process, void *__user inargs)
  	return ret;
  }
@@ -584,10 +584,10 @@ index 405e8b92913e..5d10ebd2ce6a 100644
  /* 0x06 */	{},
  /* 0x07 */	{},
  /* 0x08 */	{},
-diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
+diff --git a/misc.h b/misc.h
 index e0bd33b365b0..3a9637f0b5e2 100644
---- a/drivers/hv/dxgkrnl/misc.h
-+++ b/drivers/hv/dxgkrnl/misc.h
+--- a/misc.h
++++ b/misc.h
 @@ -29,6 +29,7 @@ extern const struct d3dkmthandle zerohandle;
   * fd_mutex
   * plistmutex (process list mutex)
@@ -596,10 +596,10 @@ index e0bd33b365b0..3a9637f0b5e2 100644
   * core_lock (dxgadapter lock)
   * device_lock (dxgdevice lock)
   * process_adapter_mutex
-diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+diff --git a/d3dkmthk.h b/d3dkmthk.h
 index 7414f0f5ce8e..4ba0070b061f 100644
---- a/include/uapi/misc/d3dkmthk.h
-+++ b/include/uapi/misc/d3dkmthk.h
+--- a/d3dkmthk.h
++++ b/d3dkmthk.h
 @@ -154,6 +154,49 @@ struct d3dkmt_destroydevice {
  	struct d3dkmthandle		device;
  };

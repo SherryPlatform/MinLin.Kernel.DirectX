@@ -23,28 +23,28 @@ instead uses the following code flow:
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/Makefile    |   2 +-
- drivers/hv/dxgkrnl/dxgkrnl.h   |   1 +
- drivers/hv/dxgkrnl/dxgmodule.c |  33 +++++++++-
- drivers/hv/dxgkrnl/dxgvmbus.c  | 117 ++++++++++++++++++++++++---------
- drivers/hv/dxgkrnl/dxgvmbus.h  |  10 +++
- drivers/hv/dxgkrnl/misc.c      |   1 +
+ Makefile    |   2 +-
+ dxgkrnl.h   |   1 +
+ dxgmodule.c |  33 +++++++++-
+ dxgvmbus.c  | 117 ++++++++++++++++++++++++---------
+ dxgvmbus.h  |  10 +++
+ misc.c      |   1 +
  6 files changed, 129 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/Makefile b/drivers/hv/dxgkrnl/Makefile
+diff --git a/Makefile b/Makefile
 index 9d821e83448a..fc85a47a6ad5 100644
---- a/drivers/hv/dxgkrnl/Makefile
-+++ b/drivers/hv/dxgkrnl/Makefile
+--- a/Makefile
++++ b/Makefile
 @@ -2,4 +2,4 @@
  # Makefile for the hyper-v compute device driver (dxgkrnl).
  
  obj-$(CONFIG_DXGKRNL)	+= dxgkrnl.o
 -dxgkrnl-y		:= dxgmodule.o hmgr.o misc.o dxgadapter.o ioctl.o dxgvmbus.o dxgprocess.o
 +dxgkrnl-y := dxgmodule.o hmgr.o misc.o dxgadapter.o ioctl.o dxgvmbus.o dxgprocess.o
-diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+diff --git a/dxgkrnl.h b/dxgkrnl.h
 index 93bc9b41aa41..091dbe999d33 100644
---- a/drivers/hv/dxgkrnl/dxgkrnl.h
-+++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+--- a/dxgkrnl.h
++++ b/dxgkrnl.h
 @@ -316,6 +316,7 @@ struct dxgglobal {
  	bool			misc_registered;
  	bool			pci_registered;
@@ -53,10 +53,10 @@ index 93bc9b41aa41..091dbe999d33 100644
  };
  
  static inline struct dxgglobal *dxggbl(void)
-diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+diff --git a/dxgmodule.c b/dxgmodule.c
 index 5c364a46b65f..b1b612b90fc1 100644
---- a/drivers/hv/dxgkrnl/dxgmodule.c
-+++ b/drivers/hv/dxgkrnl/dxgmodule.c
+--- a/dxgmodule.c
++++ b/dxgmodule.c
 @@ -147,7 +147,7 @@ void dxgglobal_remove_host_event(struct dxghostevent *event)
  
  void signal_host_cpu_event(struct dxghostevent *eventhdr)
@@ -125,10 +125,10 @@ index 5c364a46b65f..b1b612b90fc1 100644
  		if (dxgglobal->vmbus_ver > DXGK_VMBUS_INTERFACE_VERSION)
  			dxgglobal->vmbus_ver = DXGK_VMBUS_INTERFACE_VERSION;
  	}
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+diff --git a/dxgvmbus.c b/dxgvmbus.c
 index 425a1ab87bd6..4d7807909284 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.c
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
 @@ -1383,15 +1383,19 @@ int create_existing_sysmem(struct dxgdevice *device,
  	void *kmem = NULL;
  	int ret = 0;
@@ -277,10 +277,10 @@ index 425a1ab87bd6..4d7807909284 100644
  
  cleanup:
  	if (kmem)
-diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+diff --git a/dxgvmbus.h b/dxgvmbus.h
 index 88967ff6a505..b4a98f7c2522 100644
---- a/drivers/hv/dxgkrnl/dxgvmbus.h
-+++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+--- a/dxgvmbus.h
++++ b/dxgvmbus.h
 @@ -234,6 +234,16 @@ struct dxgkvmb_command_setexistingsysmemstore {
  	u32				gpadl;
  };
@@ -298,10 +298,10 @@ index 88967ff6a505..b4a98f7c2522 100644
  struct dxgkvmb_command_createprocess {
  	struct dxgkvmb_command_vm_to_host hdr;
  	void			*process;
-diff --git a/drivers/hv/dxgkrnl/misc.c b/drivers/hv/dxgkrnl/misc.c
+diff --git a/misc.c b/misc.c
 index cb1e0635bebc..4a1309d80ee5 100644
---- a/drivers/hv/dxgkrnl/misc.c
-+++ b/drivers/hv/dxgkrnl/misc.c
+--- a/misc.c
++++ b/misc.c
 @@ -35,3 +35,4 @@ u16 *wcsncpy(u16 *dest, const u16 *src, size_t n)
  	dest[i - 1] = 0;
  	return dest;

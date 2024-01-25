@@ -6,13 +6,13 @@ Subject: [PATCH 37/48] drivers: hv: dxgkrnl: Close shared file objects in case
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- drivers/hv/dxgkrnl/ioctl.c | 14 ++++++++++----
+ ioctl.c | 14 ++++++++++----
  1 file changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+diff --git a/ioctl.c b/ioctl.c
 index 7c72790f917f..69324510c9e2 100644
---- a/drivers/hv/dxgkrnl/ioctl.c
-+++ b/drivers/hv/dxgkrnl/ioctl.c
+--- a/ioctl.c
++++ b/ioctl.c
 @@ -4536,7 +4536,7 @@ enum dxg_sharedobject_type {
  };
  
