@@ -71,7 +71,7 @@ index 000000000000..07d47699d255
 + */
 +
 +#include <linux/module.h>
-+#include <linux/hyperv.h>
++#include "hyperv.h"
 +#include <linux/pagemap.h>
 +#include <linux/eventfd.h>
 +

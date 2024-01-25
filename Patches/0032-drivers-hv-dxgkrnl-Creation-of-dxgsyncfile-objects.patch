@@ -81,7 +81,7 @@ index f1245a9d8826..af51fcd35697 100644
 --- a/dxgmodule.c
 +++ b/dxgmodule.c
 @@ -16,6 +16,7 @@
- #include <linux/hyperv.h>
+ #include "hyperv.h"
  #include <linux/pci.h>
  #include "dxgkrnl.h"
 +#include "dxgsyncfile.h"

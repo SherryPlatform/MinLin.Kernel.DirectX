@@ -28,7 +28,7 @@ index f7900840d1ed..52b9e82c51e6 100644
 --- a/dxgkrnl.h
 +++ b/dxgkrnl.h
 @@ -28,6 +28,8 @@
- #include <linux/hyperv.h>
+ #include "hyperv.h"
  #include <uapi/misc/d3dkmthk.h>
  #include <linux/version.h>
 +#include "misc.h"

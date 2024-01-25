@@ -9,17 +9,30 @@ device driver.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- include/linux/hyperv.h | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ hyperv.h | 32 ++++++++++++++++
+ 1 file changed, 32 insertions(+)
 
-diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
-index ddc8713ce57b..773a418c7a67 100644
---- a/include/linux/hyperv.h
-+++ b/include/linux/hyperv.h
-@@ -1421,6 +1421,22 @@ void vmbus_free_mmio(resource_size_t start, resource_size_t size);
- 	.guid = GUID_INIT(0xda0a7802, 0xe377, 0x4aac, 0x8e, 0x77, \
- 			  0x05, 0x58, 0xeb, 0x10, 0x73, 0xf8)
- 
+diff --git a/hyperv.h b/hyperv.h
+new file mode 100644
+index 000000000000..773a418c7a67
+--- /dev/null
++++ b/hyperv.h
+@@ -0,0 +1,32 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++/*
++ * Copyright (c) 2022, Microsoft Corporation.
++ *
++ * Author:
++ *   Iouri Tarassov <iourit@linux.microsoft.com>
++ *
++ */
++
++#ifndef _HYPERV_H
++#define _HYPERV_H
++
++#include <linux/hyperv.h>
++
 +/*
 + * GPU paravirtualization global DXGK channel
 + * {DDE9CBC0-5060-4436-9448-EA1254A5D177}
@@ -36,9 +49,7 @@ index ddc8713ce57b..773a418c7a67 100644
 +	.guid = GUID_INIT(0x6e382d18, 0x3336, 0x4f4b, 0xac, 0xc4, \
 +			  0x2b, 0x77, 0x3, 0xd4, 0xdf, 0x4a)
 +
- /*
-  * Synthetic FC GUID
-  * {2f9bcc4a-0069-4af3-b76b-6fd0be528cda}
++#endif
 -- 
 2.43.0
 

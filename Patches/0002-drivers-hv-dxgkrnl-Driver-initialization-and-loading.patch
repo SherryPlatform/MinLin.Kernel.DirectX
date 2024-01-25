@@ -170,7 +170,7 @@ index 000000000000..f7900840d1ed
 +#include <linux/gfp.h>
 +#include <linux/miscdevice.h>
 +#include <linux/pci.h>
-+#include <linux/hyperv.h>
++#include "hyperv.h"
 +#include <uapi/misc/d3dkmthk.h>
 +#include <linux/version.h>
 +
@@ -319,7 +319,7 @@ index 000000000000..de02edc4d023
 +
 +#include <linux/module.h>
 +#include <linux/eventfd.h>
-+#include <linux/hyperv.h>
++#include "hyperv.h"
 +#include <linux/pci.h>
 +#include "dxgkrnl.h"
 +
@@ -833,7 +833,7 @@ index 000000000000..deb880e34377
 +#include <linux/completion.h>
 +#include <linux/slab.h>
 +#include <linux/eventfd.h>
-+#include <linux/hyperv.h>
++#include "hyperv.h"
 +#include <linux/mman.h>
 +#include <linux/delay.h>
 +#include <linux/pagemap.h>
