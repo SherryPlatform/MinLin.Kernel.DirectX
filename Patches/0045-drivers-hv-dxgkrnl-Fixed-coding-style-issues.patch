@@ -1,0 +1,150 @@
+From 3beb1306c8aabc10798330065f60ff052ace562f Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Wed, 12 Apr 2023 10:35:39 -0700
+Subject: [PATCH 45/48] drivers: hv: dxgkrnl: Fixed coding style issues
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgadapter.c | 12 ++++--------
+ drivers/hv/dxgkrnl/dxgkrnl.h    |  6 +++---
+ drivers/hv/dxgkrnl/dxgvmbus.c   |  2 +-
+ drivers/hv/dxgkrnl/ioctl.c      | 20 +++++++-------------
+ 4 files changed, 15 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+index d9d45bd4a31e..d4db4a129ea6 100644
+--- a/drivers/hv/dxgkrnl/dxgadapter.c
++++ b/drivers/hv/dxgkrnl/dxgadapter.c
+@@ -1025,8 +1025,7 @@ struct dxgprocess_adapter *dxgprocess_adapter_create(struct dxgprocess *process,
+ 	}
+ 	return adapter_info;
+ cleanup:
+-	if (adapter_info)
+-		kfree(adapter_info);
++	kfree(adapter_info);
+ 	return NULL;
+ }
+ 
+@@ -1233,10 +1232,8 @@ struct dxgsyncobject *dxgsyncobject_create(struct dxgprocess *process,
+ 	DXG_TRACE("Syncobj created: %p", syncobj);
+ 	return syncobj;
+ cleanup:
+-	if (syncobj->host_event)
+-		kfree(syncobj->host_event);
+-	if (syncobj)
+-		kfree(syncobj);
++	kfree(syncobj->host_event);
++	kfree(syncobj);
+ 	return NULL;
+ }
+ 
+@@ -1316,8 +1313,7 @@ void dxgsyncobject_release(struct kref *refcount)
+ 		kref_put(&syncobj->shared_owner->ssyncobj_kref,
+ 			 dxgsharedsyncobj_release);
+ 	}
+-	if (syncobj->host_event)
+-		kfree(syncobj->host_event);
++	kfree(syncobj->host_event);
+ 	kfree(syncobj);
+ }
+ 
+diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+index 08479015b827..2a28c9ea3488 100644
+--- a/drivers/hv/dxgkrnl/dxgkrnl.h
++++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+@@ -47,10 +47,10 @@ struct dxghwqueue;
+  * Driver private data.
+  * A single /dev/dxg device is created per virtual machine.
+  */
+-struct dxgdriver{
++struct dxgdriver {
+ 	struct dxgglobal	*dxgglobal;
+-	struct device 		*dxgdev;
+-	struct pci_driver 	pci_drv;
++	struct device		*dxgdev;
++	struct pci_driver	pci_drv;
+ 	struct hv_driver	vmbus_drv;
+ };
+ extern struct dxgdriver dxgdrv;
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+index 64fc1adf671f..b67a2e4af8d1 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.c
++++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+@@ -246,7 +246,7 @@ int dxgvmbuschannel_init(struct dxgvmbuschannel *ch, struct hv_device *hdev)
+ 		goto cleanup;
+ 	}
+ 
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0)
++#if KERNEL_VERSION(5, 15, 0) <= LINUX_VERSION_CODE
+ 	hdev->channel->max_pkt_size = DXG_MAX_VM_BUS_PACKET_SIZE;
+ #endif
+ 	ret = vmbus_open(hdev->channel, RING_BUFSIZE, RING_BUFSIZE,
+diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+index f8ca79d098f3..5ac6dd1f09b9 100644
+--- a/drivers/hv/dxgkrnl/ioctl.c
++++ b/drivers/hv/dxgkrnl/ioctl.c
+@@ -3162,8 +3162,7 @@ dxgkio_signal_sync_object(struct dxgprocess *process, void *__user inargs)
+ 		}
+ 		if (event)
+ 			eventfd_ctx_put(event);
+-		if (host_event)
+-			kfree(host_event);
++		kfree(host_event);
+ 	}
+ 	if (adapter)
+ 		dxgadapter_release_lock_shared(adapter);
+@@ -3398,8 +3397,7 @@ dxgkio_signal_sync_object_gpu2(struct dxgprocess *process, void *__user inargs)
+ 		}
+ 		if (event)
+ 			eventfd_ctx_put(event);
+-		if (host_event)
+-			kfree(host_event);
++		kfree(host_event);
+ 	}
+ 	if (adapter)
+ 		dxgadapter_release_lock_shared(adapter);
+@@ -3577,8 +3575,7 @@ dxgkio_wait_sync_object_cpu(struct dxgprocess *process, void *__user inargs)
+ 		}
+ 		if (event)
+ 			eventfd_ctx_put(event);
+-		if (async_host_event)
+-			kfree(async_host_event);
++		kfree(async_host_event);
+ 	}
+ 
+ 	DXG_TRACE_IOCTL_END(ret);
+@@ -4438,7 +4435,7 @@ build_test_command_buffer(struct dxgprocess *process,
+ 	if (cmd.dma_buffer_size < sizeof(u32) ||
+ 	    cmd.dma_buffer_size > D3DDDI_MAXTESTBUFFERSIZE ||
+ 	    cmd.dma_buffer_priv_data_size >
+-	    	D3DDDI_MAXTESTBUFFERPRIVATEDRIVERDATASIZE) {
++		D3DDDI_MAXTESTBUFFERPRIVATEDRIVERDATASIZE) {
+ 		DXG_ERR("Invalid DMA buffer or private data size");
+ 		return -EINVAL;
+ 	}
+@@ -4511,8 +4508,7 @@ driver_known_escape(struct dxgprocess *process,
+ 	enum d3dkmt_escapetype escape_type;
+ 	int ret = 0;
+ 
+-	if (args->priv_drv_data_size < sizeof(enum d3dddi_knownescapetype))
+-	{
++	if (args->priv_drv_data_size < sizeof(enum d3dddi_knownescapetype)) {
+ 		DXG_ERR("Invalid private data size");
+ 		return -EINVAL;
+ 	}
+@@ -5631,10 +5627,8 @@ void dxgk_validate_ioctls(void)
+ {
+ 	int i;
+ 
+-	for (i=0; i < ARRAY_SIZE(ioctls); i++)
+-	{
+-		if (ioctls[i].ioctl && _IOC_NR(ioctls[i].ioctl) != i)
+-		{
++	for (i = 0; i < ARRAY_SIZE(ioctls); i++) {
++		if (ioctls[i].ioctl && _IOC_NR(ioctls[i].ioctl) != i) {
+ 			DXG_ERR("Invalid ioctl");
+ 			DXGKRNL_ASSERT(0);
+ 		}
+-- 
+2.43.0
+

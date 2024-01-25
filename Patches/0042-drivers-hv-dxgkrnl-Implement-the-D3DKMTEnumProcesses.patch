@@ -1,0 +1,187 @@
+From 817c14f7225bc4253755c6a8897aa43bffdb20e7 Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Mon, 10 Apr 2023 09:27:37 -0700
+Subject: [PATCH 42/48] drivers: hv: dxgkrnl: Implement the D3DKMTEnumProcesses
+ API
+
+D3DKMTEnumProcesses is used to enumerate PIDs for all processes,
+which opened the /dev/dxg device.
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgkrnl.h    |  1 +
+ drivers/hv/dxgkrnl/dxgprocess.c |  2 +
+ drivers/hv/dxgkrnl/ioctl.c      | 81 +++++++++++++++++++++++++++++++++
+ include/uapi/misc/d3dkmthk.h    | 12 +++++
+ 4 files changed, 96 insertions(+)
+
+diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+index dbbb566e2cf0..dcc56bc84e0d 100644
+--- a/drivers/hv/dxgkrnl/dxgkrnl.h
++++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+@@ -387,6 +387,7 @@ struct dxgprocess {
+ 	pid_t			pid;
+ 	pid_t			tgid;
+ 	pid_t			vpid; /* pdi from the current namespace */
++	struct pid_namespace	*nspid; /* namespace id */
+ 	/* how many time the process was opened */
+ 	struct kref		process_kref;
+ 	/* protects the object memory */
+diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
+index 5a4c4cb0c2e8..9bfd53df1a54 100644
+--- a/drivers/hv/dxgkrnl/dxgprocess.c
++++ b/drivers/hv/dxgkrnl/dxgprocess.c
+@@ -13,6 +13,7 @@
+ 
+ #include "dxgkrnl.h"
+ #include "linux/sched.h"
++#include <linux/pid_namespace.h>
+ 
+ #undef dev_fmt
+ #define dev_fmt(fmt)	"dxgk: " fmt
+@@ -33,6 +34,7 @@ struct dxgprocess *dxgprocess_create(void)
+ 		process->pid = current->pid;
+ 		process->tgid = current->tgid;
+ 		process->vpid = task_pid_vnr(current);
++		process->nspid = task_active_pid_ns(current);
+ 		ret = dxgvmb_send_create_process(process);
+ 		if (ret < 0) {
+ 			DXG_TRACE("send_create_process failed");
+diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+index 466bef6c14b3..24b84be2fb73 100644
+--- a/drivers/hv/dxgkrnl/ioctl.c
++++ b/drivers/hv/dxgkrnl/ioctl.c
+@@ -16,6 +16,7 @@
+ #include <linux/fs.h>
+ #include <linux/anon_inodes.h>
+ #include <linux/mman.h>
++#include <linux/pid_namespace.h>
+ 
+ #include "dxgkrnl.h"
+ #include "dxgvmbus.h"
+@@ -5238,6 +5239,85 @@ dxgkio_share_object_with_host(struct dxgprocess *process, void *__user inargs)
+ 	return ret;
+ }
+ 
++static int
++dxgkio_enum_processes(struct dxgprocess *process, void *__user inargs)
++{
++	struct d3dkmt_enumprocesses args;
++	struct d3dkmt_enumprocesses *__user input = inargs;
++	struct dxgadapter *adapter = NULL;
++	struct dxgadapter *entry;
++	struct dxgglobal *dxgglobal = dxggbl();
++	struct dxgprocess_adapter *pentry;
++	int nump = 0;	/* Current number of processes*/
++	struct ntstatus status;
++	int ret;
++
++	ret = copy_from_user(&args, inargs, sizeof(args));
++	if (ret) {
++		DXG_ERR("failed to copy input args");
++		ret = -EFAULT;
++		goto cleanup;
++	}
++
++	if (args.buffer_count == 0) {
++		DXG_ERR("Invalid buffer count");
++		ret = -EINVAL;
++		goto cleanup;
++	}
++
++	dxgglobal_acquire_adapter_list_lock(DXGLOCK_SHARED);
++	dxgglobal_acquire_process_adapter_lock();
++
++	list_for_each_entry(entry, &dxgglobal->adapter_list_head,
++			    adapter_list_entry) {
++		if (*(u64 *) &entry->luid == *(u64 *) &args.adapter_luid) {
++			adapter = entry;
++			break;
++		}
++	}
++
++	if (adapter == NULL) {
++		DXG_ERR("Failed to find dxgadapter");
++		ret = -EINVAL;
++		goto cleanup_locks;
++	}
++
++	list_for_each_entry(pentry, &adapter->adapter_process_list_head,
++			    adapter_process_list_entry) {
++		if (pentry->process->nspid != task_active_pid_ns(current))
++			continue;
++		if (nump == args.buffer_count) {
++			status.v = STATUS_BUFFER_TOO_SMALL;
++			ret = ntstatus2int(status);
++			goto cleanup_locks;
++		}
++		ret = copy_to_user(&args.buffer[nump], &pentry->process->vpid,
++				   sizeof(u32));
++		if (ret) {
++			DXG_ERR("failed to copy data to user");
++			ret = -EFAULT;
++			goto cleanup_locks;
++		}
++		nump++;
++	}
++
++cleanup_locks:
++
++	dxgglobal_release_process_adapter_lock();
++	dxgglobal_release_adapter_list_lock(DXGLOCK_SHARED);
++
++	if (ret == 0) {
++		ret = copy_to_user(&input->buffer_count, &nump, sizeof(u32));
++		if (ret)
++			DXG_ERR("failed to copy buffer count to user");
++	}
++
++cleanup:
++
++	DXG_TRACE_IOCTL_END(ret);
++	return ret;
++}
++
+ static struct ioctl_desc ioctls[] = {
+ /* 0x00 */	{},
+ /* 0x01 */	{dxgkio_open_adapter_from_luid, LX_DXOPENADAPTERFROMLUID},
+@@ -5325,6 +5405,7 @@ static struct ioctl_desc ioctls[] = {
+ /* 0x46 */	{dxgkio_wait_sync_file, LX_DXWAITSYNCFILE},
+ /* 0x47 */	{dxgkio_open_syncobj_from_syncfile,
+ 		 LX_DXOPENSYNCOBJECTFROMSYNCFILE},
++/* 0x48 */	{dxgkio_enum_processes, LX_DXENUMPROCESSES},
+ };
+ 
+ /*
+diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+index 84fa07a46d3c..f9f817060fa9 100644
+--- a/include/uapi/misc/d3dkmthk.h
++++ b/include/uapi/misc/d3dkmthk.h
+@@ -1580,6 +1580,16 @@ struct d3dkmt_opensyncobjectfromsyncfile {
+ 	__u64			fence_value_gpu_va;	/* out */
+ };
+ 
++ struct d3dkmt_enumprocesses {
++	struct winluid 		adapter_luid;
++#ifdef __KERNEL__
++	__u32			*buffer;
++#else
++	__u64			buffer;
++#endif
++	__u64			buffer_count;
++};
++
+ struct d3dkmt_invalidatecache {
+ 	struct d3dkmthandle	device;
+ 	struct d3dkmthandle	allocation;
+@@ -1718,5 +1728,7 @@ struct d3dkmt_invalidatecache {
+ 	_IOWR(0x47, 0x46, struct d3dkmt_waitsyncfile)
+ #define LX_DXOPENSYNCOBJECTFROMSYNCFILE	\
+ 	_IOWR(0x47, 0x47, struct d3dkmt_opensyncobjectfromsyncfile)
++#define LX_DXENUMPROCESSES	\
++	_IOWR(0x47, 0x48, struct d3dkmt_enumprocesses)
+ 
+ #endif /* _D3DKMTHK_H */
+-- 
+2.43.0
+

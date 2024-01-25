@@ -1,0 +1,83 @@
+From 6b92c3f1050ba56a92c393dab273203c56eb142f Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Mon, 17 Apr 2023 10:57:23 -0700
+Subject: [PATCH 46/48] drivers: hv: dxgkrnl: Fixed the implementation of
+ D3DKMTQueryClockCalibration
+
+The result of a VM bus call was not copied to the user output structure.
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgvmbus.c | 18 ++++++++++--------
+ drivers/hv/dxgkrnl/ioctl.c    |  5 -----
+ 2 files changed, 10 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+index b67a2e4af8d1..afc6b9588216 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.c
++++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+@@ -1974,14 +1974,16 @@ int dxgvmb_send_query_clock_calibration(struct dxgprocess *process,
+ 					*__user inargs)
+ {
+ 	struct dxgkvmb_command_queryclockcalibration *command;
+-	struct dxgkvmb_command_queryclockcalibration_return result;
++	struct dxgkvmb_command_queryclockcalibration_return *result;
+ 	int ret;
+-	struct dxgvmbusmsg msg = {.hdr = NULL};
++	struct dxgvmbusmsgres msg = {.hdr = NULL};
+ 
+-	ret = init_message(&msg, adapter, process, sizeof(*command));
++	ret = init_message_res(&msg, adapter, sizeof(*command),
++				sizeof(*result));
+ 	if (ret)
+ 		goto cleanup;
+ 	command = (void *)msg.msg;
++	result = msg.res;
+ 
+ 	command_vgpu_to_host_init2(&command->hdr,
+ 				   DXGK_VMBCOMMAND_QUERYCLOCKCALIBRATION,
+@@ -1989,20 +1991,20 @@ int dxgvmb_send_query_clock_calibration(struct dxgprocess *process,
+ 	command->args = *args;
+ 
+ 	ret = dxgvmb_send_sync_msg(msg.channel, msg.hdr, msg.size,
+-				   &result, sizeof(result));
++				   result, sizeof(*result));
+ 	if (ret < 0)
+ 		goto cleanup;
+-	ret = copy_to_user(&inargs->clock_data, &result.clock_data,
+-			   sizeof(result.clock_data));
++	ret = copy_to_user(&inargs->clock_data, &result->clock_data,
++			   sizeof(result->clock_data));
+ 	if (ret) {
+ 		DXG_ERR("failed to copy clock data");
+ 		ret = -EFAULT;
+ 		goto cleanup;
+ 	}
+-	ret = ntstatus2int(result.status);
++	ret = ntstatus2int(result->status);
+ 
+ cleanup:
+-	free_message(&msg);
++	free_message((struct dxgvmbusmsg *)&msg);
+ 	if (ret)
+ 		DXG_TRACE("err: %d", ret);
+ 	return ret;
+diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+index 5ac6dd1f09b9..d91af2e176e9 100644
+--- a/drivers/hv/dxgkrnl/ioctl.c
++++ b/drivers/hv/dxgkrnl/ioctl.c
+@@ -4303,11 +4303,6 @@ dxgkio_query_clock_calibration(struct dxgprocess *process, void *__user inargs)
+ 						  &args, inargs);
+ 	if (ret < 0)
+ 		goto cleanup;
+-	ret = copy_to_user(inargs, &args, sizeof(args));
+-	if (ret) {
+-		DXG_ERR("failed to copy output args");
+-		ret = -EFAULT;
+-	}
+ 
+ cleanup:
+ 
+-- 
+2.43.0
+

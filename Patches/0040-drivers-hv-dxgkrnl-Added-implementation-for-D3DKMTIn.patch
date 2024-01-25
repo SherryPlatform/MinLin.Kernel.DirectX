@@ -1,0 +1,212 @@
+From 3d1f83614a47a9cdf60fba10a3d3d926320ef64c Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Wed, 15 Feb 2023 16:56:35 -0800
+Subject: [PATCH 40/48] drivers: hv: dxgkrnl: Added implementation for
+ D3DKMTInvalidateCache
+
+D3DKMTInvalidateCache is called by user mode drivers when the device
+doesn't support cache coherent access to compute device allocations.
+It needs to be called after an allocation was accessed by CPU and now
+needs to be accessed by the device. And vice versa.
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgkrnl.h  |  3 +++
+ drivers/hv/dxgkrnl/dxgvmbus.c | 27 +++++++++++++++++++
+ drivers/hv/dxgkrnl/dxgvmbus.h | 11 ++++++++
+ drivers/hv/dxgkrnl/ioctl.c    | 49 +++++++++++++++++++++++++++++++++--
+ include/uapi/misc/d3dkmthk.h  |  9 +++++++
+ 5 files changed, 97 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+index 995cd9a58713..f86e69e37147 100644
+--- a/drivers/hv/dxgkrnl/dxgkrnl.h
++++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+@@ -993,6 +993,9 @@ int dxgvmb_send_async_msg(struct dxgvmbuschannel *channel,
+ 			  u32 cmd_size);
+ int dxgvmb_send_share_object_with_host(struct dxgprocess *process,
+ 				struct d3dkmt_shareobjectwithhost *args);
++int dxgvmb_send_invalidate_cache(struct dxgprocess *process,
++				struct dxgadapter *adapter,
++				struct d3dkmt_invalidatecache *args);
+ 
+ void signal_host_cpu_event(struct dxghostevent *eventhdr);
+ int ntstatus2int(struct ntstatus status);
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+index 4e9167904425..bc8a52606d93 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.c
++++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+@@ -2029,6 +2029,33 @@ int dxgvmb_send_flush_heap_transitions(struct dxgprocess *process,
+ 	return ret;
+ }
+ 
++int dxgvmb_send_invalidate_cache(struct dxgprocess *process,
++				struct dxgadapter *adapter,
++				struct d3dkmt_invalidatecache *args)
++{
++	struct dxgkvmb_command_invalidatecache *command;
++	int ret;
++	struct dxgvmbusmsg msg = {.hdr = NULL};
++
++	ret = init_message(&msg, adapter, process, sizeof(*command));
++	if (ret)
++		goto cleanup;
++	command = (void *)msg.msg;
++	command_vgpu_to_host_init2(&command->hdr,
++				   DXGK_VMBCOMMAND_INVALIDATECACHE,
++				   process->host_handle);
++	command->device = args->device;
++	command->allocation = args->allocation;
++	command->offset = args->offset;
++	command->length = args->length;
++	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
++cleanup:
++	free_message(&msg, process);
++	if (ret)
++		DXG_TRACE("err: %d", ret);
++	return ret;
++}
++
+ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
+ 				      struct dxgadapter *adapter,
+ 				      struct d3dkmt_queryallocationresidency
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+index b4a98f7c2522..20c562b485de 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.h
++++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+@@ -125,6 +125,7 @@ enum dxgkvmb_commandtype {
+ 	DXGK_VMBCOMMAND_QUERYRESOURCEINFO	= 64,
+ 	DXGK_VMBCOMMAND_LOGEVENT		= 65,
+ 	DXGK_VMBCOMMAND_SETEXISTINGSYSMEMPAGES	= 66,
++	DXGK_VMBCOMMAND_INVALIDATECACHE		= 67,
+ 	DXGK_VMBCOMMAND_INVALID
+ };
+ 
+@@ -428,6 +429,16 @@ struct dxgkvmb_command_flushheaptransitions {
+ 	struct dxgkvmb_command_vgpu_to_host hdr;
+ };
+ 
++/* Returns  ntstatus */
++struct dxgkvmb_command_invalidatecache {
++	struct dxgkvmb_command_vgpu_to_host hdr;
++	struct d3dkmthandle device;
++	struct d3dkmthandle allocation;
++	u64 offset;
++	u64 length;
++	u64 reserved;
++};
++
+ struct dxgkvmb_command_freegpuvirtualaddress {
+ 	struct dxgkvmb_command_vgpu_to_host hdr;
+ 	struct d3dkmt_freegpuvirtualaddress args;
+diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+index f735b18fcc14..56b838a87f09 100644
+--- a/drivers/hv/dxgkrnl/ioctl.c
++++ b/drivers/hv/dxgkrnl/ioctl.c
+@@ -4286,6 +4286,8 @@ dxgkio_query_clock_calibration(struct dxgprocess *process, void *__user inargs)
+ 		dxgadapter_release_lock_shared(adapter);
+ 	if (adapter)
+ 		kref_put(&adapter->adapter_kref, dxgadapter_release);
++
++	DXG_TRACE_IOCTL_END(ret);
+ 	return ret;
+ }
+ 
+@@ -4333,6 +4335,49 @@ dxgkio_flush_heap_transitions(struct dxgprocess *process, void *__user inargs)
+ 		dxgadapter_release_lock_shared(adapter);
+ 	if (adapter)
+ 		kref_put(&adapter->adapter_kref, dxgadapter_release);
++
++	DXG_TRACE_IOCTL_END(ret);
++	return ret;
++}
++
++static int
++dxgkio_invalidate_cache(struct dxgprocess *process, void *__user inargs)
++{
++	struct d3dkmt_invalidatecache args;
++	int ret;
++	struct dxgdevice *device = NULL;
++
++	ret = copy_from_user(&args, inargs, sizeof(args));
++	if (ret) {
++		DXG_ERR("failed to copy input args");
++		ret = -EFAULT;
++		goto cleanup;
++	}
++
++	device = dxgprocess_device_by_handle(process, args.device);
++	if (device == NULL) {
++		ret = -EINVAL;
++		goto cleanup;
++	}
++
++	ret = dxgdevice_acquire_lock_shared(device);
++	if (ret < 0) {
++		kref_put(&device->device_kref, dxgdevice_release);
++		device = NULL;
++		goto cleanup;
++	}
++
++	ret = dxgvmb_send_invalidate_cache(process, device->adapter,
++		&args);
++
++cleanup:
++
++	if (device) {
++		dxgdevice_release_lock_shared(device);
++		kref_put(&device->device_kref, dxgdevice_release);
++	}
++
++	DXG_TRACE_IOCTL_END(ret);
+ 	return ret;
+ }
+ 
+@@ -5198,7 +5243,7 @@ static struct ioctl_desc ioctls[] = {
+ /* 0x22 */	{dxgkio_get_context_scheduling_priority,
+ 		 LX_DXGETCONTEXTSCHEDULINGPRIORITY},
+ /* 0x23 */	{},
+-/* 0x24 */	{},
++/* 0x24 */	{dxgkio_invalidate_cache, LX_DXINVALIDATECACHE},
+ /* 0x25 */	{dxgkio_lock2, LX_DXLOCK2},
+ /* 0x26 */	{dxgkio_mark_device_as_error, LX_DXMARKDEVICEASERROR},
+ /* 0x27 */	{dxgkio_offer_allocations, LX_DXOFFERALLOCATIONS},
+@@ -5243,7 +5288,7 @@ static struct ioctl_desc ioctls[] = {
+ /* 0x44 */	{dxgkio_share_object_with_host, LX_DXSHAREOBJECTWITHHOST},
+ /* 0x45 */	{dxgkio_create_sync_file, LX_DXCREATESYNCFILE},
+ /* 0x46 */	{dxgkio_wait_sync_file, LX_DXWAITSYNCFILE},
+-/* 0x46 */	{dxgkio_open_syncobj_from_syncfile,
++/* 0x47 */	{dxgkio_open_syncobj_from_syncfile,
+ 		 LX_DXOPENSYNCOBJECTFROMSYNCFILE},
+ };
+ 
+diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+index 1eaa3f038322..84fa07a46d3c 100644
+--- a/include/uapi/misc/d3dkmthk.h
++++ b/include/uapi/misc/d3dkmthk.h
+@@ -1580,6 +1580,13 @@ struct d3dkmt_opensyncobjectfromsyncfile {
+ 	__u64			fence_value_gpu_va;	/* out */
+ };
+ 
++struct d3dkmt_invalidatecache {
++	struct d3dkmthandle	device;
++	struct d3dkmthandle	allocation;
++	__u64			offset;
++	__u64			length;
++};
++
+ /*
+  * Dxgkrnl Graphics Port Driver ioctl definitions
+  *
+@@ -1647,6 +1654,8 @@ struct d3dkmt_opensyncobjectfromsyncfile {
+ 	_IOWR(0x47, 0x21, struct d3dkmt_getcontextinprocessschedulingpriority)
+ #define LX_DXGETCONTEXTSCHEDULINGPRIORITY \
+ 	_IOWR(0x47, 0x22, struct d3dkmt_getcontextschedulingpriority)
++#define LX_DXINVALIDATECACHE \
++	_IOWR(0x47, 0x24, struct d3dkmt_invalidatecache)
+ #define LX_DXLOCK2			\
+ 	_IOWR(0x47, 0x25, struct d3dkmt_lock2)
+ #define LX_DXMARKDEVICEASERROR		\
+-- 
+2.43.0
+

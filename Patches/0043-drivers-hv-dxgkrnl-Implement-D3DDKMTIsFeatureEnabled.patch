@@ -1,0 +1,290 @@
+From 7b9f0bba61502a4879296763251a48b873b8571b Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Mon, 10 Apr 2023 09:30:11 -0700
+Subject: [PATCH 43/48] drivers: hv: dxgkrnl: Implement D3DDKMTIsFeatureEnabled
+ API
+
+D3DKMTIsFeatureEnabled is used to query if a particular feature is
+supported by the given adapter.
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgkrnl.h  |  2 ++
+ drivers/hv/dxgkrnl/dxgvmbus.c | 58 ++++++++++++++++++++++++++++++++---
+ drivers/hv/dxgkrnl/dxgvmbus.h | 31 +++++++++++++++++++
+ drivers/hv/dxgkrnl/ioctl.c    | 46 +++++++++++++++++++++++++++
+ include/uapi/misc/d3dkmthk.h  | 31 ++++++++++++++++++-
+ 5 files changed, 163 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+index dcc56bc84e0d..39fa803a0247 100644
+--- a/drivers/hv/dxgkrnl/dxgkrnl.h
++++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+@@ -998,6 +998,8 @@ int dxgvmb_send_share_object_with_host(struct dxgprocess *process,
+ int dxgvmb_send_invalidate_cache(struct dxgprocess *process,
+ 				struct dxgadapter *adapter,
+ 				struct d3dkmt_invalidatecache *args);
++int dxgvmb_send_is_feature_enabled(struct dxgadapter *adapter,
++				   struct d3dkmt_isfeatureenabled *args);
+ 
+ void signal_host_cpu_event(struct dxghostevent *eventhdr);
+ int ntstatus2int(struct ntstatus status);
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+index 00f633c628aa..c5a710b68393 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.c
++++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+@@ -135,15 +135,16 @@ static int init_message_res(struct dxgvmbusmsgres *msg,
+ 	if (use_ext_header) {
+ 		msg->msg = (char *)&msg->hdr[1];
+ 		msg->hdr->command_offset = sizeof(msg->hdr[0]);
+-		msg->hdr->vgpu_luid = adapter->host_vgpu_luid;
++		if (adapter)
++			msg->hdr->vgpu_luid = adapter->host_vgpu_luid;
+ 	} else {
+ 		msg->msg = (char *)msg->hdr;
+ 	}
+ 	msg->res = (char *)msg->hdr + msg->size;
+-	if (dxgglobal->async_msg_enabled)
+-		msg->channel = &dxgglobal->channel;
+-	else
++	if (adapter && !dxgglobal->async_msg_enabled)
+ 		msg->channel = &adapter->channel;
++	else
++		msg->channel = &dxgglobal->channel;
+ 	return 0;
+ }
+ 
+@@ -2057,6 +2058,55 @@ int dxgvmb_send_invalidate_cache(struct dxgprocess *process,
+ 	return ret;
+ }
+ 
++int dxgvmb_send_is_feature_enabled(struct dxgadapter *adapter,
++				   struct d3dkmt_isfeatureenabled *args)
++{
++	int ret;
++	struct dxgkvmb_command_isfeatureenabled_return *result;
++	struct dxgvmbusmsgres msg = {.hdr = NULL};
++	int res_size = sizeof(*result);
++
++	if (adapter) {
++		struct dxgkvmb_command_isfeatureenabled *command;
++
++		ret = init_message_res(&msg, adapter, sizeof(*command),
++					res_size);
++		if (ret)
++			goto cleanup;
++		command = (void *)msg.msg;
++		command->feature_id = args->feature_id;
++		result = msg.res;
++		command_vgpu_to_host_init1(&command->hdr,
++					   DXGK_VMBCOMMAND_ISFEATUREENABLED);
++	} else {
++		struct dxgkvmb_command_isfeatureenabled_gbl *command;
++
++		ret = init_message_res(&msg, adapter, sizeof(*command),
++					res_size);
++		if (ret)
++			goto cleanup;
++		command = (void *)msg.msg;
++		command->feature_id = args->feature_id;
++		result = msg.res;
++		command_vm_to_host_init1(&command->hdr,
++				DXGK_VMBCOMMAND_ISFEATUREENABLED_GLOBAL);
++	}
++	ret = dxgvmb_send_sync_msg(msg.channel, msg.hdr, msg.size,
++				   result, res_size);
++	if (ret == 0) {
++		ret = ntstatus2int(result->status);
++		if (ret == 0)
++			args->result = result->result;
++		goto cleanup;
++	}
++
++cleanup:
++	free_message((struct dxgvmbusmsg *)&msg);
++	if (ret)
++		DXG_TRACE("err: %d", ret);
++	return ret;
++}
++
+ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
+ 				      struct dxgadapter *adapter,
+ 				      struct d3dkmt_queryallocationresidency
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+index 20c562b485de..a7e625b2f896 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.h
++++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+@@ -48,6 +48,7 @@ enum dxgkvmb_commandtype_global {
+ 	DXGK_VMBCOMMAND_SETIOSPACEREGION	= 1010,
+ 	DXGK_VMBCOMMAND_COMPLETETRANSACTION	= 1011,
+ 	DXGK_VMBCOMMAND_SHAREOBJECTWITHHOST	= 1021,
++	DXGK_VMBCOMMAND_ISFEATUREENABLED_GLOBAL	= 1022,
+ 	DXGK_VMBCOMMAND_INVALID_VM_TO_HOST
+ };
+ 
+@@ -126,6 +127,7 @@ enum dxgkvmb_commandtype {
+ 	DXGK_VMBCOMMAND_LOGEVENT		= 65,
+ 	DXGK_VMBCOMMAND_SETEXISTINGSYSMEMPAGES	= 66,
+ 	DXGK_VMBCOMMAND_INVALIDATECACHE		= 67,
++	DXGK_VMBCOMMAND_ISFEATUREENABLED	= 68,
+ 	DXGK_VMBCOMMAND_INVALID
+ };
+ 
+@@ -871,6 +873,35 @@ struct dxgkvmb_command_shareobjectwithhost_return {
+ 	u64		vail_nt_handle;
+ };
+ 
++struct dxgk_feature_desc {
++	u16 min_supported_version;
++	u16 max_supported_version;
++	struct {
++		u16 supported		: 1;
++		u16 virtualization_mode : 3;
++		u16 global 		: 1;
++		u16 driver_feature	: 1;
++		u16 internal		: 1;
++		u16 reserved		: 9;
++	};
++};
++
++struct  dxgkvmb_command_isfeatureenabled {
++	struct dxgkvmb_command_vgpu_to_host	hdr;
++	enum dxgk_feature_id			feature_id;
++};
++
++struct  dxgkvmb_command_isfeatureenabled_gbl {
++	struct dxgkvmb_command_vm_to_host	hdr;
++	enum dxgk_feature_id			feature_id;
++};
++
++struct dxgkvmb_command_isfeatureenabled_return {
++	struct ntstatus				status;
++	struct dxgk_feature_desc		descriptor;
++	struct dxgk_isfeatureenabled_result	result;
++};
++
+ int
+ dxgvmb_send_sync_msg(struct dxgvmbuschannel *channel,
+ 		     void *command, u32 command_size, void *result,
+diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+index 24b84be2fb73..5ff4b27af19d 100644
+--- a/drivers/hv/dxgkrnl/ioctl.c
++++ b/drivers/hv/dxgkrnl/ioctl.c
+@@ -5318,6 +5318,51 @@ dxgkio_enum_processes(struct dxgprocess *process, void *__user inargs)
+ 	return ret;
+ }
+ 
++static int
++dxgkio_is_feature_enabled(struct dxgprocess *process, void *__user inargs)
++{
++	struct d3dkmt_isfeatureenabled args;
++	struct dxgadapter *adapter = NULL;
++	struct dxgglobal *dxgglobal = dxggbl();
++	struct d3dkmt_isfeatureenabled *__user uargs = inargs;
++	int ret;
++
++	ret = copy_from_user(&args, inargs, sizeof(args));
++	if (ret) {
++		DXG_ERR("failed to copy input args");
++		ret = -EFAULT;
++		goto cleanup;
++	}
++
++	adapter = dxgprocess_adapter_by_handle(process, args.adapter);
++	if (adapter == NULL) {
++		ret = -EINVAL;
++		goto cleanup;
++	}
++
++	if (adapter) {
++		ret = dxgadapter_acquire_lock_shared(adapter);
++		if (ret < 0)
++			goto cleanup;
++	}
++
++	ret = dxgvmb_send_is_feature_enabled(adapter, &args);
++	if (ret)
++		goto cleanup;
++
++	ret = copy_to_user(&uargs->result, &args.result, sizeof(args.result));
++
++cleanup:
++
++	if (adapter) {
++		dxgadapter_release_lock_shared(adapter);
++		kref_put(&adapter->adapter_kref, dxgadapter_release);
++	}
++
++	DXG_TRACE_IOCTL_END(ret);
++	return ret;
++}
++
+ static struct ioctl_desc ioctls[] = {
+ /* 0x00 */	{},
+ /* 0x01 */	{dxgkio_open_adapter_from_luid, LX_DXOPENADAPTERFROMLUID},
+@@ -5406,6 +5451,7 @@ static struct ioctl_desc ioctls[] = {
+ /* 0x47 */	{dxgkio_open_syncobj_from_syncfile,
+ 		 LX_DXOPENSYNCOBJECTFROMSYNCFILE},
+ /* 0x48 */	{dxgkio_enum_processes, LX_DXENUMPROCESSES},
++/* 0x49 */	{dxgkio_is_feature_enabled, LX_ISFEATUREENABLED},
+ };
+ 
+ /*
+diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+index f9f817060fa9..5b345ddaf66e 100644
+--- a/include/uapi/misc/d3dkmthk.h
++++ b/include/uapi/misc/d3dkmthk.h
+@@ -1580,7 +1580,7 @@ struct d3dkmt_opensyncobjectfromsyncfile {
+ 	__u64			fence_value_gpu_va;	/* out */
+ };
+ 
+- struct d3dkmt_enumprocesses {
++struct d3dkmt_enumprocesses {
+ 	struct winluid 		adapter_luid;
+ #ifdef __KERNEL__
+ 	__u32			*buffer;
+@@ -1590,6 +1590,33 @@ struct d3dkmt_opensyncobjectfromsyncfile {
+ 	__u64			buffer_count;
+ };
+ 
++enum dxgk_feature_id {
++	_DXGK_FEATURE_HWSCH				= 0,
++	_DXGK_FEATURE_PAGE_BASED_MEMORY_MANAGER		= 32,
++	_DXGK_FEATURE_KERNEL_MODE_TESTING		= 33,
++	_DXGK_FEATURE_MAX
++};
++
++struct dxgk_isfeatureenabled_result {
++	__u16	version;
++	union {
++		struct {
++			__u16 enabled			:  1;
++			__u16 known_feature		:  1;
++			__u16 supported_by_driver	:  1;
++			__u16 supported_on_config	:  1;
++			__u16 reserved			: 12;
++		};
++		__u16 value;
++	};
++};
++
++struct d3dkmt_isfeatureenabled {
++	struct d3dkmthandle			adapter;
++	enum dxgk_feature_id			feature_id;
++	struct dxgk_isfeatureenabled_result	result;
++};
++
+ struct d3dkmt_invalidatecache {
+ 	struct d3dkmthandle	device;
+ 	struct d3dkmthandle	allocation;
+@@ -1730,5 +1757,7 @@ struct d3dkmt_invalidatecache {
+ 	_IOWR(0x47, 0x47, struct d3dkmt_opensyncobjectfromsyncfile)
+ #define LX_DXENUMPROCESSES	\
+ 	_IOWR(0x47, 0x48, struct d3dkmt_enumprocesses)
++#define LX_ISFEATUREENABLED	\
++	_IOWR(0x47, 0x49, struct d3dkmt_isfeatureenabled)
+ 
+ #endif /* _D3DKMTHK_H */
+-- 
+2.43.0
+

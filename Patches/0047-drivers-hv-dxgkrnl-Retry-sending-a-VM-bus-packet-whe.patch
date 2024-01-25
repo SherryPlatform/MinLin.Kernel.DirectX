@@ -1,0 +1,53 @@
+From 26d29d8377a78f1b0014f6c9ba6df9ed5763f885 Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Mon, 15 May 2023 11:15:17 -0700
+Subject: [PATCH 47/48] drivers: hv: dxgkrnl: Retry sending a VM bus packet
+ when there is no place in the ring buffer
+
+When D3DKMT requests are sent too quickly, the VM bus ring buffer could be
+full when a message is submitted. The change adds sleep and re-try count
+to handle this condition.
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgvmbus.c | 17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+index afc6b9588216..9320bede3a0a 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.c
++++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+@@ -420,6 +420,7 @@ int dxgvmb_send_sync_msg(struct dxgvmbuschannel *channel,
+ 	struct dxgvmbuspacket *packet = NULL;
+ 	struct dxgkvmb_command_vm_to_host *cmd1;
+ 	struct dxgkvmb_command_vgpu_to_host *cmd2;
++	int try_count = 0;
+ 
+ 	if (cmd_size > DXG_MAX_VM_BUS_PACKET_SIZE ||
+ 	    result_size > DXG_MAX_VM_BUS_PACKET_SIZE) {
+@@ -453,9 +454,19 @@ int dxgvmb_send_sync_msg(struct dxgvmbuschannel *channel,
+ 	list_add_tail(&packet->packet_list_entry, &channel->packet_list_head);
+ 	spin_unlock_irq(&channel->packet_list_mutex);
+ 
+-	ret = vmbus_sendpacket(channel->channel, command, cmd_size,
+-			       packet->request_id, VM_PKT_DATA_INBAND,
+-			       VMBUS_DATA_PACKET_FLAG_COMPLETION_REQUESTED);
++	do {
++		ret = vmbus_sendpacket(channel->channel, command, cmd_size,
++				packet->request_id, VM_PKT_DATA_INBAND,
++				VMBUS_DATA_PACKET_FLAG_COMPLETION_REQUESTED);
++		/*
++		 * -EAGAIN is returned when the VM bus ring buffer if full.
++		 * Wait 2ms to allow the host to process messages and try again.
++		 */
++		if (ret == -EAGAIN) {
++			usleep_range(1000, 2000);
++			try_count++;
++		}
++	} while (ret == -EAGAIN && try_count < 50);
+ 	if (ret) {
+ 		DXG_ERR("vmbus_sendpacket failed: %x", ret);
+ 		spin_lock_irq(&channel->packet_list_mutex);
+-- 
+2.43.0
+

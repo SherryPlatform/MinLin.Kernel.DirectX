@@ -1,0 +1,103 @@
+From f60dc0c47f77122495fc7a655f60682f99a1bdb2 Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Thu, 22 Dec 2022 14:54:28 -0800
+Subject: [PATCH 39/48] drivers: hv: dxgkrnl: Added support for compute only
+ adapters
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgkrnl.h   |  1 +
+ drivers/hv/dxgkrnl/dxgmodule.c | 11 ++++++++++-
+ drivers/hv/dxgkrnl/dxgvmbus.c  |  1 +
+ drivers/hv/dxgkrnl/ioctl.c     |  4 ++++
+ 4 files changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+index 1b40d6e39085..995cd9a58713 100644
+--- a/drivers/hv/dxgkrnl/dxgkrnl.h
++++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+@@ -478,6 +478,7 @@ struct dxgadapter {
+ 	struct winluid		luid;	/* VM bus channel luid */
+ 	u16			device_description[80];
+ 	u16			device_instance_id[WIN_MAX_PATH];
++	bool			compute_only;
+ 	bool			stopping_adapter;
+ };
+ 
+diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+index f419597f711a..0fafb6167229 100644
+--- a/drivers/hv/dxgkrnl/dxgmodule.c
++++ b/drivers/hv/dxgkrnl/dxgmodule.c
+@@ -20,6 +20,7 @@
+ 
+ #define PCI_VENDOR_ID_MICROSOFT		0x1414
+ #define PCI_DEVICE_ID_VIRTUAL_RENDER	0x008E
++#define PCI_DEVICE_ID_COMPUTE_ACCELERATOR	0x008A
+ 
+ #undef pr_fmt
+ #define pr_fmt(fmt)	"dxgk: " fmt
+@@ -270,6 +271,8 @@ int dxgglobal_create_adapter(struct pci_dev *dev, guid_t *guid,
+ 
+ 	adapter->adapter_state = DXGADAPTER_STATE_WAITING_VMBUS;
+ 	adapter->host_vgpu_luid = host_vgpu_luid;
++	if (dev->device == PCI_DEVICE_ID_COMPUTE_ACCELERATOR)
++		adapter->compute_only = true;
+ 	kref_init(&adapter->adapter_kref);
+ 	init_rwsem(&adapter->core_lock);
+ 	mutex_init(&adapter->device_creation_lock);
+@@ -622,6 +625,12 @@ static struct pci_device_id dxg_pci_id_table[] = {
+ 		.subvendor = PCI_ANY_ID,
+ 		.subdevice = PCI_ANY_ID
+ 	},
++	{
++		.vendor = PCI_VENDOR_ID_MICROSOFT,
++		.device = PCI_DEVICE_ID_COMPUTE_ACCELERATOR,
++		.subvendor = PCI_ANY_ID,
++		.subdevice = PCI_ANY_ID
++	},
+ 	{ 0 }
+ };
+ 
+@@ -962,4 +971,4 @@ module_exit(dxg_drv_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Microsoft Dxgkrnl virtual compute device Driver");
+-MODULE_VERSION("2.0.1");
++MODULE_VERSION("2.0.2");
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+index 8c99f141482e..4e9167904425 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.c
++++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+@@ -3782,6 +3782,7 @@ int dxgvmb_send_query_adapter_info(struct dxgprocess *process,
+ 			adapter_type->indirect_display_device = 0;
+ 			adapter_type->acg_supported = 0;
+ 			adapter_type->support_set_timings_from_vidpn = 0;
++			adapter_type->compute_only = !!adapter->compute_only;
+ 			break;
+ 		}
+ 	default:
+diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+index 98350583943e..f735b18fcc14 100644
+--- a/drivers/hv/dxgkrnl/ioctl.c
++++ b/drivers/hv/dxgkrnl/ioctl.c
+@@ -254,6 +254,8 @@ dxgkp_enum_adapters(struct dxgprocess *process,
+ 
+ 	list_for_each_entry(entry, &dxgglobal->adapter_list_head,
+ 			    adapter_list_entry) {
++		if (entry->compute_only && !filter.include_compute_only)
++			continue;
+ 		if (dxgadapter_acquire_lock_shared(entry) == 0) {
+ 			struct d3dkmt_adapterinfo *inf = &info[adapter_count];
+ 
+@@ -474,6 +476,8 @@ dxgkio_enum_adapters(struct dxgprocess *process, void *__user inargs)
+ 
+ 	list_for_each_entry(entry, &dxgglobal->adapter_list_head,
+ 			    adapter_list_entry) {
++		if (entry->compute_only)
++			continue;
+ 		if (dxgadapter_acquire_lock_shared(entry) == 0) {
+ 			struct d3dkmt_adapterinfo *inf = &info[adapter_count];
+ 
+-- 
+2.43.0
+
