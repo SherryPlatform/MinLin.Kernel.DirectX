@@ -28,8 +28,8 @@ index 000000000000..773a418c7a67
 + *
 + */
 +
-+#ifndef _HYPERV_H
-+#define _HYPERV_H
++#ifndef _HYPERV_WRAPPER_H
++#define _HYPERV_WRAPPER_H
 +
 +#include <linux/hyperv.h>
 +
