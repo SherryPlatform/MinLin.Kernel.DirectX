@@ -3,6 +3,14 @@
 Out-of-tree Linux Kernel Module for dxgkrnl from Windows Subsystem for Linux 2
 (WSL 2) but used in MinLin.
 
+## Usage
+
+```
+make KCPPFLAGS="-D_MAIN_KERNEL_ -DDEBUG"
+sudo make load
+sudo make unload
+```
+
 ## Version
 
 The dxgkrnl kernel module in this project current use commit 
