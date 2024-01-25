@@ -19,5 +19,5 @@ more information about the modified patches, please read the history for
 ## License
 
 MinLin.Kernel.DirectX is distributed under the same license from Linux Kernel
-because this is the Linux Kernel configurations. For more information, have a
+because this is a out-of-tree Linux kernel module. For more information, have a
 look at https://github.com/torvalds/linux/blob/master/COPYING.
