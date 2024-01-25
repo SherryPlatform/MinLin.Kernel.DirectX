@@ -123,7 +123,7 @@ index 000000000000..f7900840d1ed
 +#include <linux/miscdevice.h>
 +#include <linux/pci.h>
 +#include "hyperv.h"
-+#include <uapi/misc/d3dkmthk.h>
++#include "d3dkmthk.h"
 +#include <linux/version.h>
 +
 +struct dxgadapter;

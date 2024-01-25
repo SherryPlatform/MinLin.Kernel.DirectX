@@ -163,11 +163,11 @@ index ba2a7c6001aa..b089d126f801 100644
 --- a/dxgkrnl.h
 +++ b/dxgkrnl.h
 @@ -29,8 +29,10 @@
- #include <uapi/misc/d3dkmthk.h>
+ #include "d3dkmthk.h"
  #include <linux/version.h>
  #include "misc.h"
 +#include "hmgr.h"
- #include <uapi/misc/d3dkmthk.h>
+ #include "d3dkmthk.h"
  
 +struct dxgprocess;
  struct dxgadapter;
