@@ -9,10 +9,6 @@ compute device driver (dxgkrnl).
 - Register for PCI and VMBus driver notifications and handle
 initialization of VMBus channels.
 
-- Connect the dxgkrnl module to the drivers/hv/ Makefile and Kconfig
-
-- Create a MAINTAINERS entry
-
 A VMBus channel is a communication interface between the Hyper-V guest
 and the host. The are two type of VMBus channels, used in the driver:
   - the global channel
@@ -34,9 +30,6 @@ allocations. Hyper-V allocates IO space for the global VMBus channel.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
- MAINTAINERS                    |   7 +
- drivers/hv/Kconfig             |   2 +
- drivers/hv/Makefile            |   1 +
  Kconfig     |  26 ++
  Makefile    |   5 +
  dxgkrnl.h   | 155 ++++++++++
@@ -53,47 +46,6 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  create mode 100644 dxgvmbus.h
  create mode 100644 d3dkmthk.h
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3b79fd441dde..0b296ebd0472 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8730,6 +8730,13 @@ F:	Documentation/devicetree/bindings/mtd/ti,am654-hbmc.txt
- F:	drivers/mtd/hyperbus/
- F:	include/linux/mtd/hyperbus.h
- 
-+Hyper-V vGPU DRIVER
-+M:	Iouri Tarassov <iourit@microsoft.com>
-+L:	linux-hyperv@vger.kernel.org
-+S:	Supported
-+F:	
-+F:	d3dkmthk.h
-+
- HYPERVISOR VIRTUAL CONSOLE DRIVER
- L:	linuxppc-dev@lists.ozlabs.org
- S:	Odd Fixes
-diff --git a/drivers/hv/Kconfig b/drivers/hv/Kconfig
-index d1123ceb38f3..5aa411cecf93 100644
---- a/drivers/hv/Kconfig
-+++ b/drivers/hv/Kconfig
-@@ -28,4 +28,6 @@ config HYPERV_BALLOON
- 	help
- 	  Select this option to enable Hyper-V Balloon driver.
- 
-+source "Kconfig"
-+
- endmenu
-diff --git a/drivers/hv/Makefile b/drivers/hv/Makefile
-index d76df5c8c2a9..aa1cbdb5d0d2 100644
---- a/drivers/hv/Makefile
-+++ b/drivers/hv/Makefile
-@@ -2,6 +2,7 @@
- obj-$(CONFIG_HYPERV)		+= hv_vmbus.o
- obj-$(CONFIG_HYPERV_UTILS)	+= hv_utils.o
- obj-$(CONFIG_HYPERV_BALLOON)	+= hv_balloon.o
-+obj-$(CONFIG_DXGKRNL)		+= dxgkrnl/
- 
- CFLAGS_hv_trace.o = -I$(src)
- CFLAGS_hv_balloon.o = -I$(src)
 diff --git a/Kconfig b/Kconfig
 new file mode 100644
 index 000000000000..bcd92bbff939
