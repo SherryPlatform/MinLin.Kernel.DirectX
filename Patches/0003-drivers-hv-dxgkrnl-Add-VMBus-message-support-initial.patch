@@ -1,7 +1,7 @@
-From 8a1430fd26bb2f022dafca6434780d9815c6c6ad Mon Sep 17 00:00:00 2001
+From f673e43d88af4049c96bc2a4ad78adcbcec42c76 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 18:53:07 -0800
-Subject: [PATCH 03/48] drivers: hv: dxgkrnl: Add VMBus message support,
+Subject: [PATCH 03/53] drivers: hv: dxgkrnl: Add VMBus message support,
  initialize VMBus channels.
 
 Implement support for sending/receiving VMBus messages between
@@ -11,6 +11,8 @@ Initialize the VMBus channels and notify the host about IO space
 settings of the VMBus global channel.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgkrnl.h   |  14 ++
  dxgmodule.c |   9 +-
@@ -656,5 +658,5 @@ index 5d973604400c..2ea04cc02a1f 100644
   * Matches the Windows LUID definition.
   * LUID is a locally unique identifier (similar to GUID, but not global),
 -- 
-2.43.0
+2.44.0
 

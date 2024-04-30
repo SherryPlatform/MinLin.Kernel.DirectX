@@ -1,10 +1,12 @@
-From 8ca52f53da0c78534d16054518756dec25934a1f Mon Sep 17 00:00:00 2001
+From 4a333c25982bc8623202b807d73138d0e1febd9b Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 6 May 2022 19:19:09 -0700
-Subject: [PATCH 35/48] drivers: hv: dxgkrnl: Improve tracing and return values
+Subject: [PATCH 35/53] drivers: hv: dxgkrnl: Improve tracing and return values
  from copy from user
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgkrnl.h     |  17 +-
  dxgmodule.c   |   1 +
@@ -1994,5 +1996,5 @@ index 622904d5c3a9..3dc9e76f4f3d 100644
  }
  
 -- 
-2.43.0
+2.44.0
 

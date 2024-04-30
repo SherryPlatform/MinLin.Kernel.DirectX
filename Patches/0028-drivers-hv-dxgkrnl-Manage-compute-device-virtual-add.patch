@@ -1,7 +1,7 @@
-From 3e8f65caa0e4643d82fb1166df67dfe116b27d7a Mon Sep 17 00:00:00 2001
+From 88a651083fdd0ca67b7a3968341c8017d19464e7 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:13:04 -0800
-Subject: [PATCH 28/48] drivers: hv: dxgkrnl: Manage compute device virtual
+Subject: [PATCH 28/53] drivers: hv: dxgkrnl: Manage compute device virtual
  addresses
 
 Implement ioctls to manage compute device virtual addresses (VA):
@@ -31,6 +31,8 @@ allows the operations to be queued and synchronized with execution
 of other compute device DMA buffers..
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgkrnl.h  |  10 ++
  dxgvmbus.c | 150 ++++++++++++++++++++++
@@ -698,5 +700,5 @@ index 944f9d1e73d6..1f60f5120e1d 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.43.0
+2.44.0
 

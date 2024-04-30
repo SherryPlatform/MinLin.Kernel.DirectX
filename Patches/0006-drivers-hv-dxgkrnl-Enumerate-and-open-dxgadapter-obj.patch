@@ -1,7 +1,7 @@
-From 3de62d2af5e88e12c37e398a277ebb949ff6848a Mon Sep 17 00:00:00 2001
+From 4996e973c70e9441dae6baa941af9ece52359227 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 21 Mar 2022 19:18:50 -0700
-Subject: [PATCH 06/48] drivers: hv: dxgkrnl: Enumerate and open dxgadapter
+Subject: [PATCH 06/53] drivers: hv: dxgkrnl: Enumerate and open dxgadapter
  objects
 
 Implement ioctls to enumerate dxgadapter objects:
@@ -31,6 +31,8 @@ This is needed for cleanup because either a process or an adapter
 could be destroyed first.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgmodule.c |   3 +
  ioctl.c     | 482 ++++++++++++++++++++++++++++++++-
@@ -549,5 +551,5 @@ index 60e38d104517..b08ea9430093 100644
 +}
 +#endif
 -- 
-2.43.0
+2.44.0
 

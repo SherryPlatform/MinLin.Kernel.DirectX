@@ -1,7 +1,7 @@
-From 7f215fb668f834c99464935af76b23af2bb74e74 Mon Sep 17 00:00:00 2001
+From 7e5cf15f6f68300ad18779f44ab7b3560cf1b248 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 19:00:38 -0800
-Subject: [PATCH 04/48] drivers: hv: dxgkrnl: Creation of dxgadapter object
+Subject: [PATCH 04/53] drivers: hv: dxgkrnl: Creation of dxgadapter object
 
 Handle creation and destruction of dxgadapter object, which
 represents a virtual compute device, projected to the VM by
@@ -28,6 +28,8 @@ When the per virtual compute device VMBus channel or the global
 channel are destroyed, the adapter object is destroyed.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  Makefile     |   2 +-
  dxgadapter.c | 170 +++++++++++++++++++++++++
@@ -1156,5 +1158,5 @@ index 4c6047c32a20..d292e9a9bb7f 100644
   * Some of the Windows return codes, which needs to be translated to Linux
   * IOCTL return codes. Positive values are success codes and need to be
 -- 
-2.43.0
+2.44.0
 

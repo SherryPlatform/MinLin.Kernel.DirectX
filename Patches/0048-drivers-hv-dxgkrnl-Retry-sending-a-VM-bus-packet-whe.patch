@@ -1,7 +1,7 @@
-From 26d29d8377a78f1b0014f6c9ba6df9ed5763f885 Mon Sep 17 00:00:00 2001
+From 968d47ae240d7f5c5489f7e02bc738ddd859e9ad Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 15 May 2023 11:15:17 -0700
-Subject: [PATCH 47/48] drivers: hv: dxgkrnl: Retry sending a VM bus packet
+Subject: [PATCH 48/53] drivers: hv: dxgkrnl: Retry sending a VM bus packet
  when there is no place in the ring buffer
 
 When D3DKMT requests are sent too quickly, the VM bus ring buffer could be
@@ -9,12 +9,14 @@ full when a message is submitted. The change adds sleep and re-try count
 to handle this condition.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgvmbus.c | 17 ++++++++++++++---
  1 file changed, 14 insertions(+), 3 deletions(-)
 
 diff --git a/dxgvmbus.c b/dxgvmbus.c
-index afc6b9588216..9320bede3a0a 100644
+index 67f55f4bf41d..467e7707c8c7 100644
 --- a/dxgvmbus.c
 +++ b/dxgvmbus.c
 @@ -420,6 +420,7 @@ int dxgvmb_send_sync_msg(struct dxgvmbuschannel *channel,
@@ -49,5 +51,5 @@ index afc6b9588216..9320bede3a0a 100644
  		DXG_ERR("vmbus_sendpacket failed: %x", ret);
  		spin_lock_irq(&channel->packet_list_mutex);
 -- 
-2.43.0
+2.44.0
 

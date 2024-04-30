@@ -1,7 +1,7 @@
-From c6f982358904c7b8864fa9e9528798c420cbb4e6 Mon Sep 17 00:00:00 2001
+From 4cac582182599fce7ca94701a0ecb9856a7e20e0 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 8 Oct 2021 14:17:39 -0700
-Subject: [PATCH 29/48] drivers: hv: dxgkrnl: Add support to map guest pages by
+Subject: [PATCH 29/53] drivers: hv: dxgkrnl: Add support to map guest pages by
  host
 
 Implement support for mapping guest memory pages by the host.
@@ -22,6 +22,8 @@ instead uses the following code flow:
 - the host maps the PFNs to get access to the memory
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  Makefile    |   2 +-
  dxgkrnl.h   |   1 +
@@ -308,5 +310,5 @@ index cb1e0635bebc..4a1309d80ee5 100644
  }
 +
 -- 
-2.43.0
+2.44.0
 

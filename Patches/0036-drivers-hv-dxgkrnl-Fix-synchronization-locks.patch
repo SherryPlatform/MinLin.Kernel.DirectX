@@ -1,9 +1,11 @@
-From df7ea89bd921847ea2c3e4905971fe8ec93d3524 Mon Sep 17 00:00:00 2001
+From f8aa2df96d989bc9c71588519299c850ae23efce Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 13 Jun 2022 14:18:10 -0700
-Subject: [PATCH 36/48] drivers: hv: dxgkrnl: Fix synchronization locks
+Subject: [PATCH 36/53] drivers: hv: dxgkrnl: Fix synchronization locks
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgadapter.c | 19 ++++----
  dxgkrnl.h    |  8 +++-
@@ -385,5 +387,5 @@ index ee2ebfdd1c13..9fcab4ae2c0c 100644
   * device_mutex (dxgglobal mutex)
   */
 -- 
-2.43.0
+2.44.0
 

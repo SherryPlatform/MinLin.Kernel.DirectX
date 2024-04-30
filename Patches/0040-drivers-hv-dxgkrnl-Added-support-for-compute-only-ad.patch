@@ -1,10 +1,12 @@
-From f60dc0c47f77122495fc7a655f60682f99a1bdb2 Mon Sep 17 00:00:00 2001
+From 26f7bf2126b006a95121955e5b9d9ace013ec81c Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 22 Dec 2022 14:54:28 -0800
-Subject: [PATCH 39/48] drivers: hv: dxgkrnl: Added support for compute only
+Subject: [PATCH 40/53] drivers: hv: dxgkrnl: Added support for compute only
  adapters
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgkrnl.h   |  1 +
  dxgmodule.c | 11 ++++++++++-
@@ -13,7 +15,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  4 files changed, 16 insertions(+), 1 deletion(-)
 
 diff --git a/dxgkrnl.h b/dxgkrnl.h
-index 1b40d6e39085..995cd9a58713 100644
+index c5ed23cb90df..d20489317c0b 100644
 --- a/dxgkrnl.h
 +++ b/dxgkrnl.h
 @@ -478,6 +478,7 @@ struct dxgadapter {
@@ -65,10 +67,10 @@ index f419597f711a..0fafb6167229 100644
 -MODULE_VERSION("2.0.1");
 +MODULE_VERSION("2.0.2");
 diff --git a/dxgvmbus.c b/dxgvmbus.c
-index 8c99f141482e..4e9167904425 100644
+index eb3f4c5153a6..5f17efc937c3 100644
 --- a/dxgvmbus.c
 +++ b/dxgvmbus.c
-@@ -3782,6 +3782,7 @@ int dxgvmb_send_query_adapter_info(struct dxgprocess *process,
+@@ -3774,6 +3774,7 @@ int dxgvmb_send_query_adapter_info(struct dxgprocess *process,
  			adapter_type->indirect_display_device = 0;
  			adapter_type->acg_supported = 0;
  			adapter_type->support_set_timings_from_vidpn = 0;
@@ -99,5 +101,5 @@ index 98350583943e..f735b18fcc14 100644
  			struct d3dkmt_adapterinfo *inf = &info[adapter_count];
  
 -- 
-2.43.0
+2.44.0
 

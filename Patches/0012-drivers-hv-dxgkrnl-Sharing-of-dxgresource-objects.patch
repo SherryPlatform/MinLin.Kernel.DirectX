@@ -1,7 +1,7 @@
-From 9ed342ca0f45a0b80663dead0798b992f6857923 Mon Sep 17 00:00:00 2001
+From bc02e34a9ac59a261716dd358e8728113ce9c669 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 31 Jan 2022 17:52:31 -0800
-Subject: [PATCH 12/48] drivers: hv: dxgkrnl: Sharing of dxgresource objects
+Subject: [PATCH 12/53] drivers: hv: dxgkrnl: Sharing of dxgresource objects
 
 Implement creation of shared resources and ioctls for sharing
 dxgresource objects between processes in the virtual machine.
@@ -29,6 +29,8 @@ used to actually open the object using the LX_DXOPENRESOURCEFROMNTHANDLE
 ioctl.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgadapter.c |  81 ++++
  dxgkrnl.h    |  77 ++++
@@ -1458,5 +1460,5 @@ index 39055b0c1069..f74564cf7ee9 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.43.0
+2.44.0
 

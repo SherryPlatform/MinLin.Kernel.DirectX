@@ -1,7 +1,7 @@
-From 820bc549e7a43a25ed41487175b19d31d87d2acd Mon Sep 17 00:00:00 2001
+From 8cdf2063b1317017d74112fad29d23c7681ee0fa Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 11:14:22 -0800
-Subject: [PATCH 19/48] drivers: hv: dxgkrnl: Manage device allocation
+Subject: [PATCH 19/53] drivers: hv: dxgkrnl: Manage device allocation
  properties
 
 Implement ioctls to manage properties of a compute device allocation:
@@ -25,6 +25,8 @@ The LX_DXCHANGEVIDEOMEMORYRESERVATION ioctl changes compute device
 memory reservation of an allocation.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgkrnl.h  |  21 +++
  dxgvmbus.c | 300 ++++++++++++++++++++++++++++++++++
@@ -907,5 +909,5 @@ index b498f09e694d..af381101fd90 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  #define LX_DXSHAREOBJECTS		\
 -- 
-2.43.0
+2.44.0
 

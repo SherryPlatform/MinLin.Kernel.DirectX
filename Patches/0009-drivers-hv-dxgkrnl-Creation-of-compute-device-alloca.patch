@@ -1,7 +1,7 @@
-From 568aba870a41260b6434cdd1a853b6c22d643513 Mon Sep 17 00:00:00 2001
+From 6ed7d6e3f11aeee710851ef0eec2e2258dd1afcd Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 15:37:52 -0800
-Subject: [PATCH 09/48] drivers: hv: dxgkrnl: Creation of compute device
+Subject: [PATCH 09/53] drivers: hv: dxgkrnl: Creation of compute device
  allocations and resources
 
 Implemented ioctls to create and destroy virtual compute device
@@ -29,6 +29,8 @@ the compute device) or evicted. When an allocation is evicted,
 its content is stored in the backing store in system memory.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgadapter.c | 282 ++++++++++++++
  dxgkrnl.h    | 113 ++++++
@@ -2257,5 +2259,5 @@ index 4ba0070b061f..cf670b9c4dc2 100644
  	_IOWR(0x47, 0x14, struct d3dkmt_enumadapters2)
  #define LX_DXCLOSEADAPTER		\
 -- 
-2.43.0
+2.44.0
 

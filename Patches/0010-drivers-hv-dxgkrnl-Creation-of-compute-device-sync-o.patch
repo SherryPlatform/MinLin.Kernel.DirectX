@@ -1,7 +1,7 @@
-From 19e557abca16cd9ec4d0cb1aae240cf5a17e9316 Mon Sep 17 00:00:00 2001
+From cc18f43a8a1bd979215f37faf427f58582efd7a9 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 14:38:32 -0800
-Subject: [PATCH 10/48] drivers: hv: dxgkrnl: Creation of compute device sync
+Subject: [PATCH 10/53] drivers: hv: dxgkrnl: Creation of compute device sync
  objects
 
 Implement ioctls to create and destroy compute devicesync objects:
@@ -30,6 +30,8 @@ This is done as follow:
   to point to the IO space address
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgadapter.c | 184 ++++++++++++++++++++++++++++
  dxgkrnl.h    |  80 +++++++++++++
@@ -1011,5 +1013,5 @@ index cf670b9c4dc2..4e1069f41d76 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  
 -- 
-2.43.0
+2.44.0
 

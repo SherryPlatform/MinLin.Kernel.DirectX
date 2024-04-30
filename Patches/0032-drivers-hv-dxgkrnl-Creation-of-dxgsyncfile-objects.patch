@@ -1,7 +1,7 @@
-From 7943244fd7097ec7334edb37af0d3d3794b7c205 Mon Sep 17 00:00:00 2001
+From f140fbe27f1dd7514fe25613ce42720239f8d1f1 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 22 Mar 2022 11:02:49 -0700
-Subject: [PATCH 32/48] drivers: hv: dxgkrnl: Creation of dxgsyncfile objects
+Subject: [PATCH 32/53] drivers: hv: dxgkrnl: Creation of dxgsyncfile objects
 
 Implement the ioctl to create a dxgsyncfile object
 (LX_DXCREATESYNCFILE). This object is a wrapper around a monitored
@@ -19,6 +19,8 @@ the host, the host sends a message to the virtual machine and the
 sync_file object is signaled.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  Kconfig       |   2 +
  Makefile      |   2 +-
@@ -478,5 +480,5 @@ index 1f60f5120e1d..c7f168425dc7 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.43.0
+2.44.0
 

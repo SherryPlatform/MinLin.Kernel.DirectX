@@ -1,7 +1,7 @@
-From 4aa27ed5d3732886ed10f3205d69bf94bb8ae757 Mon Sep 17 00:00:00 2001
+From 4efe7bc8fe02855efc3640eb15d92c58995f6806 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 18 Jan 2022 15:50:30 -0800
-Subject: [PATCH 22/48] drivers: hv: dxgkrnl: The escape ioctl
+Subject: [PATCH 22/53] drivers: hv: dxgkrnl: The escape ioctl
 
 Implement the escape ioctl (LX_DXESCAPE).
 
@@ -11,6 +11,8 @@ driver (host). It allows the user mode driver to extend the virtual
 compute device API.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgkrnl.h  |  3 ++
  dxgvmbus.c | 75 ++++++++++++++++++++++++++++++++---
@@ -299,5 +301,5 @@ index b7d8b1d91cfc..749edf28bd43 100644
  	_IOWR(0x47, 0x0e, struct d3dkmt_getdevicestate)
  #define LX_DXSUBMITCOMMAND		\
 -- 
-2.43.0
+2.44.0
 

@@ -1,9 +1,11 @@
-From 8c753191b32597356eb1e2f3bdf2f9a50d732251 Mon Sep 17 00:00:00 2001
+From fd711919d9e94f54f0f273fb9fa73d8a2f9655fc Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 2 May 2022 11:46:48 -0700
-Subject: [PATCH 34/48] drivers: hv: dxgkrnl: Implement D3DKMTWaitSyncFile
+Subject: [PATCH 34/53] drivers: hv: dxgkrnl: Implement D3DKMTWaitSyncFile
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgkrnl.h     |  11 ++
  dxgmodule.c   |   7 +-
@@ -652,5 +654,5 @@ index c7f168425dc7..1eaa3f038322 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.43.0
+2.44.0
 

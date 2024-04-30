@@ -1,7 +1,7 @@
-From 7a349c144b373dc2df2a1fc503d645179a2f217f Mon Sep 17 00:00:00 2001
+From 06b8fe675c7dd233741265273de11dcc2f9ffe80 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:33:52 -0800
-Subject: [PATCH 27/48] drivers: hv: dxgkrnl: Manage residency of allocations
+Subject: [PATCH 27/53] drivers: hv: dxgkrnl: Manage residency of allocations
 
 Implement ioctls to manage residency of compute device allocations:
   - LX_DXMAKERESIDENT,
@@ -25,6 +25,8 @@ The LX_DXEVICT ioctl istructs the video memory manager to evict
 the given allocations from device accessible memory.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgkrnl.h  |   4 +
  dxgvmbus.c |  98 +++++++++++++++++++++++
@@ -441,5 +443,5 @@ index a9bafab97c18..944f9d1e73d6 100644
  	_IOWR(0x47, 0x1f, struct d3dkmt_flushheaptransitions)
  #define LX_DXGETCONTEXTINPROCESSSCHEDULINGPRIORITY \
 -- 
-2.43.0
+2.44.0
 

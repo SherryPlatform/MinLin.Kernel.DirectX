@@ -1,20 +1,22 @@
-From 150004f62e929f760dfeb1f36c7545685505e979 Mon Sep 17 00:00:00 2001
+From 8a3d371e9f3e2691bce546e21fd90416e3b4ff04 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 18:11:52 -0800
-Subject: [PATCH 01/48] drivers: hv: dxgkrnl: Add virtual compute device VMBus
+Subject: [PATCH 01/53] drivers: hv: dxgkrnl: Add virtual compute device VMBus
  channel guids
 
 Add VMBus channel guids, which are used by hyper-v virtual compute
 device driver.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  hyperv.h | 32 ++++++++++++++++
  1 file changed, 32 insertions(+)
 
-diff --git a/hyperv.h b/hyperv.h
+diff --git /dev/null b/hyperv.h
 new file mode 100644
-index 000000000000..773a418c7a67
+index 000000000000..caf62f602cf8
 --- /dev/null
 +++ b/hyperv.h
 @@ -0,0 +1,32 @@
@@ -51,5 +53,5 @@ index 000000000000..773a418c7a67
 +
 +#endif
 -- 
-2.43.0
+2.44.0
 

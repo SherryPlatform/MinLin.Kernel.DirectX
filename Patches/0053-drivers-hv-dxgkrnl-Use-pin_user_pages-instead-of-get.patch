@@ -1,0 +1,63 @@
+From 429134d79a359d3c1092de3385d91506819b1a76 Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Thu, 7 Mar 2024 15:09:03 -0800
+Subject: [PATCH 53/53] drivers: hv: dxgkrnl: Use pin_user_pages instead of
+ get_user_pages for DMA accessible memory
+
+Pages, which are obtained by calling get_user_pages(), can be evicted from memory.
+pin_user_pages() should be used for memory, which is accessed by DMA.
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+---
+ dxgadapter.c |  2 +-
+ dxgvmbus.c   | 12 ++++++++----
+ 2 files changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/dxgadapter.c b/dxgadapter.c
+index cf946e476411..c94283b09fa1 100644
+--- a/dxgadapter.c
++++ b/dxgadapter.c
+@@ -882,7 +882,7 @@ struct dxgallocation *dxgallocation_create(struct dxgprocess *process)
+ void dxgallocation_stop(struct dxgallocation *alloc)
+ {
+ 	if (alloc->pages) {
+-		release_pages(alloc->pages, alloc->num_pages);
++		unpin_user_pages(alloc->pages, alloc->num_pages);
+ 		vfree(alloc->pages);
+ 		alloc->pages = NULL;
+ 	}
+diff --git a/dxgvmbus.c b/dxgvmbus.c
+index 467e7707c8c7..abb6d2af89ac 100644
+--- a/dxgvmbus.c
++++ b/dxgvmbus.c
+@@ -1457,6 +1457,7 @@ int create_existing_sysmem(struct dxgdevice *device,
+ 	u64 *pfn;
+ 	u32 pages_to_send;
+ 	u32 i;
++	u32 gup_flags = FOLL_LONGTERM;
+ 	struct dxgglobal *dxgglobal = dxggbl();
+ 
+ 	/*
+@@ -1475,12 +1476,15 @@ int create_existing_sysmem(struct dxgdevice *device,
+ 		ret = -ENOMEM;
+ 		goto cleanup;
+ 	}
+-	ret1 = get_user_pages_fast((unsigned long)sysmem, npages, !read_only,
+-				  dxgalloc->pages);
++	if (!read_only)
++		gup_flags |= FOLL_WRITE;
++	ret1 = pin_user_pages_fast((unsigned long)sysmem, npages, gup_flags,
++				   dxgalloc->pages);
+ 	if (ret1 != npages) {
+ 		DXG_ERR("get_user_pages_fast failed: %d", ret1);
+-		if (ret1 > 0 && ret1 < npages)
+-			release_pages(dxgalloc->pages, ret1);
++		if (ret1 > 0 && ret1 < npages) {
++			unpin_user_pages(dxgalloc->pages, ret1);
++		}
+ 		vfree(dxgalloc->pages);
+ 		dxgalloc->pages = NULL;
+ 		ret = -ENOMEM;
+-- 
+2.44.0
+

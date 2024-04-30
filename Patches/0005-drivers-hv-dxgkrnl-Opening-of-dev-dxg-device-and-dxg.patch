@@ -1,7 +1,7 @@
-From b601870207e9a929902b4919ab43a6b056ac3ec7 Mon Sep 17 00:00:00 2001
+From 92886ddd0d02af10fed4e3dce6dead656bd7bfd2 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 19:12:48 -0800
-Subject: [PATCH 05/48] drivers: hv: dxgkrnl: Opening of /dev/dxg device and
+Subject: [PATCH 05/53] drivers: hv: dxgkrnl: Opening of /dev/dxg device and
  dxgprocess creation
 
 - Implement opening of the device (/dev/dxg) file object and creation of
@@ -29,6 +29,8 @@ the corresponding VM object are the same. A host handle is allocated
 first and its value is assigned to the guest object.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  Makefile     |   2 +-
  dxgadapter.c |  72 ++++
@@ -1844,5 +1846,5 @@ index 2ea04cc02a1f..c675d5827ed5 100644
 +
  #endif /* _D3DKMTHK_H */
 -- 
-2.43.0
+2.44.0
 

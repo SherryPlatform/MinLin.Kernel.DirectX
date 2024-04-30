@@ -1,7 +1,7 @@
-From d297951444ce4b1842b0a5f796456388939dd630 Mon Sep 17 00:00:00 2001
+From 334cdc997816e9345ad3e9a414db10586b13cc8e Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 13:58:28 -0800
-Subject: [PATCH 18/48] drivers: hv: dxgkrnl: Map(unmap) CPU address to device
+Subject: [PATCH 18/53] drivers: hv: dxgkrnl: Map(unmap) CPU address to device
  allocation
 
 Implement ioctls to map/unmap CPU virtual addresses to compute device
@@ -27,6 +27,8 @@ The LX_DXUNLOCK2 ioctl unmaps a CPU virtual address from a compute
 device allocation.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgadapter.c |  11 +++
  dxgkrnl.h    |  14 +++
@@ -493,5 +495,5 @@ index 8a013b07e88a..b498f09e694d 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.43.0
+2.44.0
 

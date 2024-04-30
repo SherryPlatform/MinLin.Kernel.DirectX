@@ -1,0 +1,90 @@
+From a923b184aebd59e3502c06c5e693de158333e813 Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Thu, 7 Mar 2024 09:34:05 -0800
+Subject: [PATCH 52/53] drivers: hv: dxgkrnl: Implement D3DKMTEnumProcesses to
+ match the Windows implementation
+
+The behavior of D3DKMTEnumProcesses on Windows is that when buffer_count is 0 or
+input buffer is NULL, the number of active processes is returned. The Linux implemenation
+is updated to match this.
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+---
+ dxgmodule.c |  2 +-
+ ioctl.c     | 29 ++++++++++++++++++-----------
+ 2 files changed, 19 insertions(+), 12 deletions(-)
+
+diff --git a/dxgmodule.c b/dxgmodule.c
+index e3ac70df1b6f..8f5d6db256a3 100644
+--- a/dxgmodule.c
++++ b/dxgmodule.c
+@@ -965,4 +965,4 @@ module_exit(dxg_drv_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Microsoft Dxgkrnl virtual compute device Driver");
+-MODULE_VERSION("2.0.2");
++MODULE_VERSION("2.0.3");
+diff --git a/ioctl.c b/ioctl.c
+index f8f116a7f87f..42f3de31a63c 100644
+--- a/ioctl.c
++++ b/ioctl.c
+@@ -5373,7 +5373,7 @@ dxgkio_enum_processes(struct dxgprocess *process, void *__user inargs)
+ 	struct dxgprocess_adapter *pentry;
+ 	int nump = 0;	/* Current number of processes*/
+ 	struct ntstatus status;
+-	int ret;
++	int ret, ret1;
+ 
+ 	ret = copy_from_user(&args, inargs, sizeof(args));
+ 	if (ret) {
+@@ -5382,12 +5382,6 @@ dxgkio_enum_processes(struct dxgprocess *process, void *__user inargs)
+ 		goto cleanup;
+ 	}
+ 
+-	if (args.buffer_count == 0) {
+-		DXG_ERR("Invalid buffer count");
+-		ret = -EINVAL;
+-		goto cleanup;
+-	}
+-
+ 	dxgglobal_acquire_adapter_list_lock(DXGLOCK_SHARED);
+ 	dxgglobal_acquire_process_adapter_lock();
+ 
+@@ -5405,6 +5399,19 @@ dxgkio_enum_processes(struct dxgprocess *process, void *__user inargs)
+ 		goto cleanup_locks;
+ 	}
+ 
++	list_for_each_entry(pentry, &adapter->adapter_process_list_head,
++			    adapter_process_list_entry) {
++		if (pentry->process->nspid == task_active_pid_ns(current))
++			nump++;
++	}
++
++	if (nump > args.buffer_count || args.buffer == NULL) {
++		status.v = STATUS_BUFFER_TOO_SMALL;
++		ret = ntstatus2int(status);
++		goto cleanup_locks;
++	}
++
++	nump = 0;
+ 	list_for_each_entry(pentry, &adapter->adapter_process_list_head,
+ 			    adapter_process_list_entry) {
+ 		if (pentry->process->nspid != task_active_pid_ns(current))
+@@ -5429,10 +5436,10 @@ dxgkio_enum_processes(struct dxgprocess *process, void *__user inargs)
+ 	dxgglobal_release_process_adapter_lock();
+ 	dxgglobal_release_adapter_list_lock(DXGLOCK_SHARED);
+ 
+-	if (ret == 0) {
+-		ret = copy_to_user(&input->buffer_count, &nump, sizeof(u32));
+-		if (ret)
+-			DXG_ERR("failed to copy buffer count to user");
++	ret1 = copy_to_user(&input->buffer_count, &nump, sizeof(u32));
++	if (ret1) {
++		DXG_ERR("failed to copy buffer count to user");
++		ret = -EFAULT;
+ 	}
+ 
+ cleanup:
+-- 
+2.44.0
+

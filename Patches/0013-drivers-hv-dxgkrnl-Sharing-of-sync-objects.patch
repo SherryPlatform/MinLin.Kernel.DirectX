@@ -1,7 +1,7 @@
-From 4ae3485931bd22338276e24069e0cfac7a6e337f Mon Sep 17 00:00:00 2001
+From 3dde47c8e1f3ab525ba7520a5f8c39b871bc9a6c Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 31 Jan 2022 16:41:28 -0800
-Subject: [PATCH 13/48] drivers: hv: dxgkrnl: Sharing of sync objects
+Subject: [PATCH 13/53] drivers: hv: dxgkrnl: Sharing of sync objects
 
 Implement creation of a shared sync objects and the ioctl for sharing
 dxgsyncobject objects between processes in the virtual machine.
@@ -18,6 +18,8 @@ LX_DXOPENSYNCOBJECTFROMNTHANDLE2 ioctl, which returns a d3dkmthandle
 value.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgadapter.c | 181 ++++++++++-
  dxgkrnl.h    |  96 ++++++
@@ -1549,5 +1551,5 @@ index f74564cf7ee9..a78252901c8d 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.43.0
+2.44.0
 

@@ -1,7 +1,7 @@
-From 41a13b65445cc2aa9964fa753026a135f80c9a81 Mon Sep 17 00:00:00 2001
+From c6e2b7479b0167695d7711d61e5aa0e385ee60ec Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:57:41 -0800
-Subject: [PATCH 26/48] drivers: hv: dxgkrnl: Ioctls to manage scheduling
+Subject: [PATCH 26/53] drivers: hv: dxgkrnl: Ioctls to manage scheduling
  priority
 
 Implement iocts to manage compute device scheduling priority:
@@ -16,6 +16,8 @@ pick contexts for execution. There is a global priority and a
 priority within a process.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgkrnl.h  |   9 ++
  dxgvmbus.c |  67 ++++++++++++-
@@ -422,5 +424,5 @@ index 46b9f6d303bf..a9bafab97c18 100644
  	_IOWR(0x47, 0x31, struct d3dkmt_signalsynchronizationobjectfromcpu)
  #define LX_DXSIGNALSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.43.0
+2.44.0
 

@@ -1,7 +1,7 @@
-From 64820ab93217deeaff87283e1b4128e8a288f1df Mon Sep 17 00:00:00 2001
+From 5786371fbbfc79b3f60738bbb36ffdbbb0517d22 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 18 Jan 2022 15:01:55 -0800
-Subject: [PATCH 25/48] drivers: hv: dxgkrnl: Offer and reclaim allocations
+Subject: [PATCH 25/53] drivers: hv: dxgkrnl: Offer and reclaim allocations
 
 Implement ioctls to offer and reclaim compute device allocations:
   - LX_DXOFFERALLOCATIONS,
@@ -19,6 +19,8 @@ must restore the content of the allocation before it can be used by
 the device.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgkrnl.h  |   8 +++
  dxgvmbus.c | 124 +++++++++++++++++++++++++++++++++-
@@ -460,5 +462,5 @@ index ea18242ceb83..46b9f6d303bf 100644
  	_IOWR(0x47, 0x2e, struct d3dkmt_setallocationpriority)
  #define LX_DXSIGNALSYNCHRONIZATIONOBJECTFROMCPU \
 -- 
-2.43.0
+2.44.0
 

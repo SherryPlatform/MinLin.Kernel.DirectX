@@ -1,12 +1,14 @@
-From 56030b5a1915eb2eb2c26d5b3d153609eb3bea3a Mon Sep 17 00:00:00 2001
+From 41976faa45d0321dd0c44c273b70dacc7c3984cf Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 22 Mar 2022 10:32:54 -0700
-Subject: [PATCH 31/48] drivers: hv: dxgkrnl: Remove dxgk_init_ioctls
+Subject: [PATCH 31/53] drivers: hv: dxgkrnl: Remove dxgk_init_ioctls
 
 The array of ioctls is initialized statically to remove the unnecessary
 function.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgmodule.c |  2 +-
  ioctl.c     | 15 +++++++--------
@@ -94,5 +96,5 @@ index f6700e974f25..8732a66040a0 100644
  		 LX_DXSUBMITWAITFORSYNCOBJECTSTOHWQUEUE},
  /* 0x37 */	{dxgkio_unlock2, LX_DXUNLOCK2},
 -- 
-2.43.0
+2.44.0
 

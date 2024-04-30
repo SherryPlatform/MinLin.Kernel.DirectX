@@ -1,7 +1,7 @@
-From b387d4d5be9d8671242291bcd270311896e657a1 Mon Sep 17 00:00:00 2001
+From 9b79c92d672879e6994916e41cdb0d469b8525cb Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 9 Feb 2022 11:01:57 -0800
-Subject: [PATCH 24/48] drivers: hv: dxgkrnl: Ioctls to query statistics and
+Subject: [PATCH 24/53] drivers: hv: dxgkrnl: Ioctls to query statistics and
  clock calibration
 
 Implement ioctls to query statistics from the VGPU device
@@ -15,6 +15,8 @@ The LX_DXQUERYCLOCKCALIBRATION ioctl queries the compute device clock
 and is used for performance monitoring.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgkrnl.h  |   8 +++
  dxgvmbus.c |  77 +++++++++++++++++++++++
@@ -417,5 +419,5 @@ index ce5a638a886d..ea18242ceb83 100644
  	_IOWR(0x47, 0x44, struct d3dkmt_shareobjectwithhost)
  
 -- 
-2.43.0
+2.44.0
 

@@ -1,7 +1,7 @@
-From a1b62bc5572bc36d48c9f2b495747b7989dfa01b Mon Sep 17 00:00:00 2001
+From 484f062e21f288260d38770ecd8b0cdf08bff5eb Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 18:02:09 -0800
-Subject: [PATCH 15/48] drivers: hv: dxgkrnl: Submit execution commands to the
+Subject: [PATCH 15/53] drivers: hv: dxgkrnl: Submit execution commands to the
  compute device
 
 Implements ioctls for submission of compute device buffers for execution:
@@ -17,6 +17,8 @@ To improve performance both ioctls use asynchronous VM bus messages
 to communicate with the host as these are high frequency operations.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgkrnl.h  |   6 ++
  dxgvmbus.c | 113 ++++++++++++++++++++++++++++++
@@ -445,5 +447,5 @@ index 6ec70852de6e..9238115d165d 100644
  	_IOWR(0x47, 0x35, struct d3dkmt_submitsignalsyncobjectstohwqueue)
  #define LX_DXSUBMITWAITFORSYNCOBJECTSTOHWQUEUE \
 -- 
-2.43.0
+2.44.0
 

@@ -1,0 +1,47 @@
+From ac41b060612a1486b017e8cf7bb44a7b0278103e Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Wed, 6 Dec 2023 15:45:30 -0800
+Subject: [PATCH 50/53] drivers: hv: dxgkrnl: Fix build breaks when switching
+ to 6.6 kernel due to hv_driver remove callback change.
+
+The hv_driver remove callback has been updated to return void instead of int.
+dxg_remove_vmbus() in dxgmodule.c needs to be updated to match. See this
+commit for more context:
+96ec2939620c "Drivers: hv: Make remove callback of hyperv driver void returned"
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+---
+ dxgmodule.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/dxgmodule.c b/dxgmodule.c
+index 0fafb6167229..5459bd9b82fb 100644
+--- a/dxgmodule.c
++++ b/dxgmodule.c
+@@ -803,9 +803,8 @@ static int dxg_probe_vmbus(struct hv_device *hdev,
+ 	return ret;
+ }
+ 
+-static int dxg_remove_vmbus(struct hv_device *hdev)
++static void dxg_remove_vmbus(struct hv_device *hdev)
+ {
+-	int ret = 0;
+ 	struct dxgvgpuchannel *vgpu_channel;
+ 	struct dxgglobal *dxgglobal = dxggbl();
+ 
+@@ -830,12 +829,9 @@ static int dxg_remove_vmbus(struct hv_device *hdev)
+ 	} else {
+ 		/* Unknown device type */
+ 		DXG_ERR("Unknown device type");
+-		ret = -ENODEV;
+ 	}
+ 
+ 	mutex_unlock(&dxgglobal->device_mutex);
+-
+-	return ret;
+ }
+ 
+ MODULE_DEVICE_TABLE(vmbus, dxg_vmbus_id_table);
+-- 
+2.44.0
+

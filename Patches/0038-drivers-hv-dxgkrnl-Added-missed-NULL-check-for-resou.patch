@@ -1,10 +1,12 @@
-From 411a9171ae715efe3817a05a1802f9367c04df33 Mon Sep 17 00:00:00 2001
+From a07e7e39352af3ce678c9a4638e2226033219038 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 29 Jun 2022 10:04:23 -0700
-Subject: [PATCH 38/48] drivers: hv: dxgkrnl: Added missed NULL check for
+Subject: [PATCH 38/53] drivers: hv: dxgkrnl: Added missed NULL check for
  resource object
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  ioctl.c | 10 ++++++----
  1 file changed, 6 insertions(+), 4 deletions(-)
@@ -46,5 +48,5 @@ index 69324510c9e2..98350583943e 100644
  		dxgdevice_release_lock_shared(device);
  		kref_put(&device->device_kref, dxgdevice_release);
 -- 
-2.43.0
+2.44.0
 

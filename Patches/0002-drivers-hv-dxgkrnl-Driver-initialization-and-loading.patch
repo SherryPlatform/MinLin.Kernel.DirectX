@@ -1,7 +1,7 @@
-From 6479d16e3ab12aeca320dcfab84452f94406f0e2 Mon Sep 17 00:00:00 2001
+From b1779dc853e2cc6d97d08282be03ef53ff3ac041 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 24 Mar 2021 11:10:28 -0700
-Subject: [PATCH 02/48] drivers: hv: dxgkrnl: Driver initialization and loading
+Subject: [PATCH 02/53] drivers: hv: dxgkrnl: Driver initialization and loading
 
 - Create skeleton and add basic functionality for the Hyper-V
 compute device driver (dxgkrnl).
@@ -29,6 +29,8 @@ The IO space is used to handle CPU accessible compute device
 allocations. Hyper-V allocates IO space for the global VMBus channel.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  Kconfig     |  26 ++
  Makefile    |   5 +
@@ -919,5 +921,5 @@ index 000000000000..5d973604400c
 +
 +#endif /* _D3DKMTHK_H */
 -- 
-2.43.0
+2.44.0
 

@@ -1,7 +1,7 @@
-From 6f6de48af1662e1695e93752b945c80c4bd88e8b Mon Sep 17 00:00:00 2001
+From ab9e38da3c96537a10a0a1f62071e0df8195b671 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 20 Jan 2022 15:15:18 -0800
-Subject: [PATCH 14/48] drivers: hv: dxgkrnl: Creation of paging queue objects.
+Subject: [PATCH 14/53] drivers: hv: dxgkrnl: Creation of paging queue objects.
 
 Implement ioctls for creation/destruction of the paging queue objects:
   - LX_DXCREATEPAGINGQUEUE,
@@ -17,6 +17,8 @@ Each paging queue has an associated monitored fence sync object, which
 is used to detect when a paging operation is completed.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  dxgadapter.c |  89 +++++++++++++++
  dxgkrnl.h    |  24 ++++
@@ -634,5 +636,5 @@ index a78252901c8d..6ec70852de6e 100644
  	_IOWR(0x47, 0x19, struct d3dkmt_destroydevice)
  #define LX_DXDESTROYSYNCHRONIZATIONOBJECT \
 -- 
-2.43.0
+2.44.0
 
